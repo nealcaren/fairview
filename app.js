@@ -35,6 +35,7 @@ const els = {
   seedChip: document.getElementById("seed-chip"),
   inspector: document.getElementById("inspector"),
   legend: document.getElementById("legend"),
+  legendToggle: document.getElementById("legend-toggle"),
   viewButtons: document.querySelectorAll(".view-toggle button"),
   placementList: document.getElementById("placements"),
   placementInfo: document.getElementById("placement-info"),
@@ -106,6 +107,8 @@ const uiState = {
   lastPlacementMessage: null,
   coachMessage: null,
   onboardingOptOut: loadOnboardingOptOut(),
+  legendCollapsed: loadLegendCollapsed(),
+  legendPrimed: loadLegendPrimed(),
 };
 
 const session = {
@@ -149,6 +152,22 @@ function loadOnboardingOptOut() {
 
 function saveOnboardingOptOut(value) {
   window.localStorage.setItem("fairview-onboarding-optout", value ? "1" : "0");
+}
+
+function loadLegendCollapsed() {
+  return window.localStorage.getItem("fairview-legend-collapsed") === "1";
+}
+
+function saveLegendCollapsed(value) {
+  window.localStorage.setItem("fairview-legend-collapsed", value ? "1" : "0");
+}
+
+function loadLegendPrimed() {
+  return window.localStorage.getItem("fairview-legend-primed") === "1";
+}
+
+function saveLegendPrimed(value) {
+  window.localStorage.setItem("fairview-legend-primed", value ? "1" : "0");
 }
 
 function setActiveTab(tabName) {
@@ -519,6 +538,9 @@ function renderCoach(simState) {
 
 function openOnboarding(force = false) {
   if (!els.onboardingModal) return;
+  if (!uiState.legendPrimed || force) {
+    setLegendCollapsed(false, { persist: false });
+  }
   if (!force && uiState.onboardingOptOut) return;
   els.onboardingModal.classList.remove("hidden");
 }
@@ -526,11 +548,38 @@ function openOnboarding(force = false) {
 function closeOnboarding() {
   if (!els.onboardingModal) return;
   els.onboardingModal.classList.add("hidden");
+  if (!uiState.legendPrimed) {
+    uiState.legendPrimed = true;
+    saveLegendPrimed(true);
+    setLegendCollapsed(true);
+  }
+}
+
+function setLegendCollapsed(value, options = {}) {
+  const persist = options.persist ?? true;
+  uiState.legendCollapsed = value;
+  if (persist) {
+    saveLegendCollapsed(value);
+  }
+  renderLegendVisibility();
+}
+
+function renderLegendVisibility() {
+  if (els.legend) {
+    els.legend.classList.toggle("hidden", uiState.legendCollapsed);
+  }
+  if (!els.legendToggle) return;
+  const expanded = !uiState.legendCollapsed;
+  els.legendToggle.textContent = expanded ? "Hide Legend" : "Legend";
+  els.legendToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+  els.legendToggle.setAttribute("aria-label", expanded ? "Hide legend" : "Show legend");
 }
 
 function renderLegend(simState) {
+  let legendHtml = "";
+
   if (uiState.viewMode === "income") {
-    els.legend.innerHTML = `
+    legendHtml = `
       <span class="legend-icon">${neighborhoodSvgFromCells(0, 5, false)}</span> low-income neighborhood style
       <span class="legend-icon">${neighborhoodSvgFromCells(1, 5, false)}</span> middle-income neighborhood style
       <span class="legend-icon">${neighborhoodSvgFromCells(2, 5, false)}</span> high-income neighborhood style
@@ -547,23 +596,24 @@ function renderLegend(simState) {
       <span class="legend-token">${tokenIconSvg("police")}</span> police
       <span class="legend-token">${tokenIconSvg("community")}</span> community
     `;
-    return;
-  }
-
-  if (uiState.viewMode === "functionalism") {
-    els.legend.innerHTML = `
+  } else if (uiState.viewMode === "functionalism") {
+    legendHtml = `
       <span class="dot" style="background:#d1e8d5"></span> Low integration
       <span class="dot" style="background:#2f8f6a"></span> High integration
       <span class="dev-marker">Metric: cohesion minus disorder</span>
     `;
-    return;
+  } else {
+    legendHtml = `
+      <span class="dot" style="background:#b8d0c8"></span> Low burden
+      <span class="dot" style="background:#a63d40"></span> High burden
+      <span class="dev-marker">Metric: housing + risk</span>
+    `;
   }
 
-  els.legend.innerHTML = `
-    <span class="dot" style="background:#b8d0c8"></span> Low burden
-    <span class="dot" style="background:#a63d40"></span> High burden
-    <span class="dev-marker">Metric: housing + risk</span>
-  `;
+  if (els.legend) {
+    els.legend.innerHTML = legendHtml;
+  }
+  renderLegendVisibility();
 }
 
 function tileBackground(simState, district) {
@@ -1599,6 +1649,12 @@ function bindEvents() {
     });
   }
 
+  if (els.legendToggle) {
+    els.legendToggle.addEventListener("click", () => {
+      setLegendCollapsed(!uiState.legendCollapsed);
+    });
+  }
+
   if (els.onboardingClose) {
     els.onboardingClose.addEventListener("click", () => {
       closeOnboarding();
@@ -1703,6 +1759,9 @@ function bindEvents() {
 }
 
 function init() {
+  if (!uiState.legendPrimed) {
+    uiState.legendCollapsed = false;
+  }
   initScenarioSelect();
   els.seedInput.value = state.seed;
   els.policySort.value = uiState.policySort;

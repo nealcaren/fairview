@@ -437,6 +437,14 @@ textarea {
   background: var(--high);
 }
 
+.map-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .view-toggle {
   display: inline-grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -468,6 +476,11 @@ textarea {
   background: var(--accent-2);
   border-color: var(--accent-2);
   color: #fff;
+}
+
+.legend-toggle {
+  min-height: 34px;
+  padding: 6px 10px;
 }
 
 .grid {
@@ -1371,6 +1384,11 @@ input[type="checkbox"] {
   .tabs {
     gap: 6px;
     padding: 6px;
+  }
+
+  .map-controls {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .tab-link,

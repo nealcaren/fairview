@@ -28,10 +28,13 @@
           <div class="panel grid-panel">
             <div class="panel-header">
               <h2>City Grid</h2>
-              <div class="view-toggle" role="group" aria-label="Theory view">
-                <button class="toggle active" data-view="income" aria-pressed="true">Income</button>
-                <button class="toggle" data-view="functionalism" aria-pressed="false">Functionalism</button>
-                <button class="toggle" data-view="conflict" aria-pressed="false">Conflict</button>
+              <div class="map-controls">
+                <div class="view-toggle" role="group" aria-label="Theory view">
+                  <button class="toggle active" data-view="income" aria-pressed="true">Income</button>
+                  <button class="toggle" data-view="functionalism" aria-pressed="false">Functionalism</button>
+                  <button class="toggle" data-view="conflict" aria-pressed="false">Conflict</button>
+                </div>
+                <button id="legend-toggle" class="secondary legend-toggle" aria-expanded="true" aria-label="Hide legend">Hide Legend</button>
               </div>
             </div>
             <div id="legend" class="legend"></div>
