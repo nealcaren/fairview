@@ -12,7 +12,10 @@ import {
   createState,
   step,
   placeToken,
+  loadContent,
 } from "./engine.js";
+
+await loadContent();
 
 const els = {
   grid: document.getElementById("grid"),
@@ -57,6 +60,24 @@ const els = {
   endgameModal: document.getElementById("endgame-modal"),
   endgameBody: document.getElementById("endgame-body"),
   endgameClose: document.getElementById("endgame-close"),
+  adminTools: document.getElementById("admin-tools"),
+  restartSim: document.getElementById("restart-sim"),
+  tabLinks: document.querySelectorAll(".tab-link"),
+  tabPanes: document.querySelectorAll(".tab-pane"),
+  mobileButtons: document.querySelectorAll(".mobile-btn"),
+  mapSection: document.getElementById("map-section"),
+  officeSection: document.getElementById("office-section"),
+  dilemmaModal: document.getElementById("dilemma-modal"),
+  dilemmaTitle: document.getElementById("dilemma-title"),
+  dilemmaBody: document.getElementById("dilemma-body"),
+  dilemmaChoices: document.getElementById("dilemma-choices"),
+  quizModal: document.getElementById("quiz-modal"),
+  quizQuestion: document.getElementById("quiz-question"),
+  quizChoices: document.getElementById("quiz-choices"),
+  quizFeedback: document.getElementById("quiz-feedback"),
+  snapshotCanvas: document.getElementById("snapshot-canvas"),
+  snapshotDownload: document.getElementById("snapshot-download"),
+  snapshotCopy: document.getElementById("snapshot-copy"),
 };
 
 const uiState = {
@@ -71,6 +92,11 @@ const uiState = {
   savedRuns: [],
   tone: loadTone(),
   endgameShown: false,
+  activeTab: "briefing",
+  mobileView: "map",
+  pendingQuizPolicyId: null,
+  quizUsed: false,
+  quizDiscounts: {},
 };
 
 const session = {
@@ -108,6 +134,32 @@ function saveTone(tone) {
   window.localStorage.setItem("fairview-tone", tone);
 }
 
+function setActiveTab(tabName) {
+  uiState.activeTab = tabName;
+  els.tabLinks.forEach((link) => {
+    const isActive = link.dataset.tab === tabName;
+    link.classList.toggle("active", isActive);
+    link.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+  els.tabPanes.forEach((pane) => {
+    const isActive = pane.dataset.tab === tabName;
+    pane.classList.toggle("active", isActive);
+  });
+}
+
+function setMobileView(view) {
+  uiState.mobileView = view;
+  els.mobileButtons.forEach((button) => {
+    const isActive = button.dataset.mobile === view;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+  if (els.mapSection && els.officeSection) {
+    els.mapSection.classList.toggle("mobile-hidden", view !== "map");
+    els.officeSection.classList.toggle("mobile-hidden", view !== "office");
+  }
+}
+
 function startSimulation(seed, scenarioKey) {
   rng = createRng(seed);
   state = createState({ seed, scenarioKey, rng });
@@ -117,9 +169,21 @@ function startSimulation(seed, scenarioKey) {
   uiState.hoveredDistrictId = null;
   uiState.stageBannerTurn = null;
   uiState.endgameShown = false;
+  uiState.pendingQuizPolicyId = null;
+  uiState.quizUsed = false;
+  uiState.quizDiscounts = {};
   els.nextTurn.disabled = false;
   if (els.endgameModal) {
     els.endgameModal.classList.add("hidden");
+  }
+  if (els.dilemmaModal) {
+    els.dilemmaModal.classList.add("hidden");
+  }
+  if (els.quizModal) {
+    els.quizModal.classList.add("hidden");
+  }
+  if (els.adminTools) {
+    els.adminTools.classList.add("hidden");
   }
   els.seedInput.value = seed;
   els.scenarioSelect.value = scenarioKey;
@@ -204,6 +268,10 @@ function renderGrid(simState) {
     const tile = document.createElement("div");
     tile.className = "tile";
     tile.dataset.id = district.id;
+    const tierDelta = simState.lastDistrictDeltas[district.id]?.incomeTier ?? 0;
+    if (tierDelta > 0) {
+      tile.classList.add("tier-up");
+    }
     if (uiState.selectedDistrictId === district.id) {
       tile.classList.add("selected");
     }
@@ -278,6 +346,9 @@ function handleTileAction(district) {
     if (result.ok) {
       uiState.activeToken = null;
       render(state);
+      if (result.synergies && result.synergies.length) {
+        window.requestAnimationFrame(() => playSynergyEffect(result.synergies));
+      }
     }
     return;
   }
@@ -286,10 +357,45 @@ function handleTileAction(district) {
   renderInspector(state);
 }
 
+function playSynergyEffect(synergies) {
+  if (!els.grid) return;
+  const gridRect = els.grid.getBoundingClientRect();
+  synergies.forEach((synergy) => {
+    const fromTile = els.grid.querySelector(`.tile[data-id="${synergy.fromId}"]`);
+    const toTile = els.grid.querySelector(`.tile[data-id="${synergy.toId}"]`);
+    if (!fromTile || !toTile) return;
+    fromTile.classList.add("synergy");
+    toTile.classList.add("synergy");
+
+    const fromRect = fromTile.getBoundingClientRect();
+    const toRect = toTile.getBoundingClientRect();
+    const x1 = fromRect.left + fromRect.width / 2 - gridRect.left;
+    const y1 = fromRect.top + fromRect.height / 2 - gridRect.top;
+    const x2 = toRect.left + toRect.width / 2 - gridRect.left;
+    const y2 = toRect.top + toRect.height / 2 - gridRect.top;
+    const length = Math.hypot(x2 - x1, y2 - y1);
+    const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+
+    const link = document.createElement("div");
+    link.className = "synergy-link";
+    link.style.width = `${length}px`;
+    link.style.left = `${x1}px`;
+    link.style.top = `${y1}px`;
+    link.style.transform = `rotate(${angle}deg)`;
+    els.grid.appendChild(link);
+
+    window.setTimeout(() => {
+      link.remove();
+      fromTile.classList.remove("synergy");
+      toTile.classList.remove("synergy");
+    }, 900);
+  });
+}
+
 function renderInspector(simState) {
   const id = uiState.hoveredDistrictId ?? uiState.selectedDistrictId;
   if (id === null || id === undefined) {
-    els.inspector.textContent = "Hover or focus a district to see details.";
+    els.inspector.textContent = "Tap a district to inspect.";
     return;
   }
   const district = simState.districts.find((d) => d.id === id);
@@ -345,12 +451,14 @@ function renderPolicies(simState) {
     const wrapper = document.createElement("div");
     wrapper.className = "policy-card";
     const checked = uiState.selectedPolicies.has(card.id);
+    const cost = policyCost(card);
+    const costLabel = cost !== card.cost ? `${cost} (discounted)` : `${cost}`;
     const tags = card.tags.map((tag) => `<span class="badge">${tag}</span>`).join(" ");
     wrapper.innerHTML = `
       <h4>${card.name}</h4>
       <p>${card.summary}</p>
       <div class="policy-meta">
-        <span>Cost: ${card.cost}</span>
+        <span>Cost: ${costLabel}</span>
         <span>Stage: ${card.minStage}</span>
       </div>
       <div class="policy-meta">${tags}</div>
@@ -373,12 +481,19 @@ function renderPolicies(simState) {
       if (!card) return;
 
       if (event.target.checked) {
+        if (card.quiz && !uiState.quizUsed && !uiState.quizDiscounts[card.id]) {
+          event.target.checked = false;
+          openQuizModal(card);
+          return;
+        }
         const currentCost = selectedCost();
-        if (uiState.selectedPolicies.size >= MAX_POLICIES_PER_TURN || currentCost + card.cost > simState.budget) {
+        const cardCost = policyCost(card);
+        if (uiState.selectedPolicies.size >= MAX_POLICIES_PER_TURN || currentCost + cardCost > simState.budget) {
           event.target.checked = false;
           return;
         }
         uiState.selectedPolicies.add(id);
+        showPolicyFloaters(card);
       } else {
         uiState.selectedPolicies.delete(id);
       }
@@ -410,7 +525,7 @@ function updatePolicyUI(simState) {
       checkbox.disabled = false;
     } else if (uiState.selectedPolicies.size >= MAX_POLICIES_PER_TURN) {
       checkbox.disabled = true;
-    } else if (currentCost + card.cost > simState.budget) {
+    } else if (currentCost + policyCost(card) > simState.budget) {
       checkbox.disabled = true;
     } else {
       checkbox.disabled = false;
@@ -419,8 +534,149 @@ function updatePolicyUI(simState) {
   els.budgetChip.textContent = `Budget ${simState.budget} (Selected ${currentCost})`;
 }
 
+function policyCost(card) {
+  const discount = uiState.quizDiscounts[card.id] || 0;
+  return Math.max(0, Math.round(card.cost * (1 - discount)));
+}
+
 function selectedCost() {
-  return POLICY_CARDS.filter((card) => uiState.selectedPolicies.has(card.id)).reduce((sum, card) => sum + card.cost, 0);
+  return POLICY_CARDS.filter((card) => uiState.selectedPolicies.has(card.id)).reduce((sum, card) => sum + policyCost(card), 0);
+}
+
+function openQuizModal(card) {
+  if (!els.quizModal || !card.quiz) return;
+  uiState.pendingQuizPolicyId = card.id;
+  els.quizQuestion.textContent = card.quiz.question;
+  els.quizFeedback.textContent = "";
+  els.quizChoices.innerHTML = card.quiz.options
+    .map(
+      (option) => `
+      <button class="secondary" data-choice="${option.id}">
+        ${option.label}
+      </button>`
+    )
+    .join("");
+  const buttons = els.quizChoices.querySelectorAll("button[data-choice]");
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      resolveQuizChoice(card, button.dataset.choice);
+    });
+  });
+  els.quizModal.classList.remove("hidden");
+}
+
+function closeQuizModal() {
+  if (!els.quizModal) return;
+  els.quizModal.classList.add("hidden");
+  uiState.pendingQuizPolicyId = null;
+}
+
+function resolveQuizChoice(card, choiceId) {
+  const isCorrect = card.quiz.correctId === choiceId;
+  uiState.quizUsed = true;
+  if (isCorrect) {
+    uiState.quizDiscounts[card.id] = card.quiz.discount ?? 0.1;
+    els.quizFeedback.textContent = "Correct! Policy cost reduced.";
+  } else {
+    els.quizFeedback.textContent = "Not quite. No discount this time.";
+  }
+
+  closeQuizModal();
+  attemptSelectPolicy(card);
+}
+
+function attemptSelectPolicy(card) {
+  const currentCost = selectedCost();
+  const cardCost = policyCost(card);
+  if (uiState.selectedPolicies.size >= MAX_POLICIES_PER_TURN || currentCost + cardCost > state.budget) {
+    renderPolicies(state);
+    return;
+  }
+  uiState.selectedPolicies.add(card.id);
+  showPolicyFloaters(card);
+  renderPolicies(state);
+}
+
+function showPolicyFloaters(card) {
+  if (!card || !card.effects) return;
+  showMetricFloaters(card.effects);
+  showDistrictFloaters(card.effects);
+}
+
+function showMetricFloaters(effects) {
+  effects.forEach((effect) => {
+    if (effect.target !== "city" || typeof effect.delta !== "number" || (effect.delay && effect.delay > 0)) return;
+    const targetEl = metricTarget(effect.key);
+    if (!targetEl) return;
+    const text = `${effect.delta > 0 ? "+" : ""}${effect.delta}`;
+    const type = effect.delta > 0 ? "positive" : effect.delta < 0 ? "negative" : "neutral";
+    spawnFloater(targetEl, text, type);
+  });
+}
+
+function showDistrictFloaters(effects) {
+  const housingEffects = effects.filter(
+    (effect) =>
+      effect.target === "district" &&
+      effect.key === "housingCost" &&
+      typeof effect.delta === "number" &&
+      !(effect.delay && effect.delay > 0)
+  );
+  if (!housingEffects.length) return;
+  const districts = state.districts;
+  housingEffects.forEach((effect) => {
+    const affected = districts.filter((district) => districtMatchesFilter(district, effect.where));
+    affected.slice(0, 8).forEach((district) => {
+      const tile = els.grid.querySelector(`.tile[data-id="${district.id}"]`);
+      if (!tile) return;
+      const text = effect.delta < 0 ? "-$$" : "+$$";
+      spawnGridFloater(tile, text, effect.delta < 0 ? "negative" : "positive");
+    });
+  });
+}
+
+function metricTarget(key) {
+  if (key === "budget") return els.budgetChip;
+  const direct = document.getElementById(key);
+  if (direct) return direct;
+  return document.querySelector(`.metric-line[data-metric="${key}"]`);
+}
+
+function spawnFloater(target, text, type) {
+  const rect = target.getBoundingClientRect();
+  const floater = document.createElement("div");
+  floater.className = `floater ${type}`;
+  floater.textContent = text;
+  floater.style.left = `${rect.left + rect.width / 2}px`;
+  floater.style.top = `${rect.top}px`;
+  document.body.appendChild(floater);
+  window.setTimeout(() => {
+    floater.remove();
+  }, 1100);
+}
+
+function spawnGridFloater(tile, text, type) {
+  const gridRect = els.grid.getBoundingClientRect();
+  const rect = tile.getBoundingClientRect();
+  const floater = document.createElement("div");
+  floater.className = `grid-floater ${type}`;
+  floater.textContent = text;
+  floater.style.left = `${rect.left + rect.width / 2 - gridRect.left}px`;
+  floater.style.top = `${rect.top + rect.height / 2 - gridRect.top}px`;
+  els.grid.appendChild(floater);
+  window.setTimeout(() => {
+    floater.remove();
+  }, 1000);
+}
+
+function districtMatchesFilter(district, where) {
+  if (!where) return true;
+  if (where === "income_low") return district.incomeTier === 0;
+  if (where === "income_mid") return district.incomeTier === 1;
+  if (where === "income_high") return district.incomeTier === 2;
+  if (where === "access_high") return district.access >= 60;
+  if (where === "access_low") return district.access <= 40;
+  return true;
 }
 
 function filteredPolicies(simState) {
@@ -470,26 +726,26 @@ function renderPlacementPanel(simState) {
 
 function renderDashboards(simState) {
   const func = [
-    ["Cohesion", simState.metrics.cohesion],
-    ["Capacity", simState.metrics.capacity],
-    ["Legitimacy", simState.metrics.legitimacy],
-    ["Disorder", simState.metrics.disorder],
-    ["Resilience", simState.metrics.resilience],
+    ["cohesion", "Cohesion", simState.metrics.cohesion],
+    ["capacity", "Capacity", simState.metrics.capacity],
+    ["legitimacy", "Legitimacy", simState.metrics.legitimacy],
+    ["disorder", "Disorder", simState.metrics.disorder],
+    ["resilience", "Resilience", simState.metrics.resilience],
   ];
   const conf = [
-    ["Inequality", simState.metrics.inequality],
-    ["Mobility", simState.metrics.mobility],
-    ["Political Capture", simState.metrics.capture],
-    ["Group Burden", simState.metrics.burden],
-    ["Contestation", simState.metrics.contestation],
+    ["inequality", "Inequality", simState.metrics.inequality],
+    ["mobility", "Mobility", simState.metrics.mobility],
+    ["capture", "Political Capture", simState.metrics.capture],
+    ["burden", "Group Burden", simState.metrics.burden],
+    ["contestation", "Contestation", simState.metrics.contestation],
   ];
 
   els.funcMetrics.innerHTML = func
-    .map(([label, value]) => `<div class="metric-line"><span>${label}</span><span>${Math.round(value)}</span></div>`)
+    .map(([key, label, value]) => `<div class="metric-line" data-metric="${key}"><span>${label}</span><span>${Math.round(value)}</span></div>`)
     .join("");
 
   els.confMetrics.innerHTML = conf
-    .map(([label, value]) => `<div class="metric-line"><span>${label}</span><span>${Math.round(value)}</span></div>`)
+    .map(([key, label, value]) => `<div class="metric-line" data-metric="${key}"><span>${label}</span><span>${Math.round(value)}</span></div>`)
     .join("");
 }
 
@@ -520,7 +776,11 @@ function formatNewsItem(item) {
 
   let content = entry.text || entry.fallback || "";
   if (kind === "event" || kind === "interpretive") {
-    content = `${entry.label ? `${entry.label}: ` : ""}${pickTemplateLine(entry)}`;
+    if (entry.text) {
+      content = entry.text;
+    } else {
+      content = `${entry.label ? `${entry.label}: ` : ""}${pickTemplateLine(entry)}`;
+    }
   }
   if (kind === "quote") {
     content = formatQuoteLine(entry);
@@ -554,6 +814,10 @@ function formatQuoteLine(entry) {
 }
 
 function renderEvent(simState) {
+  if (simState.pendingDilemma) {
+    els.event.textContent = `Dilemma pending: ${simState.pendingDilemma.name}.`;
+    return;
+  }
   if (simState.activeCrisis) {
     els.event.textContent = `Crisis cascade active (${simState.activeCrisis.turnsLeft} turns left).`;
     return;
@@ -575,6 +839,7 @@ function renderMeta(simState) {
   els.legitimacy.textContent = Math.round(simState.metrics.legitimacy);
   els.budgetChip.textContent = `Budget ${simState.budget} (Selected ${selectedCost()})`;
   els.seedChip.textContent = `Seed ${simState.seed}`;
+  els.nextTurn.disabled = Boolean(simState.pendingDilemma || simState.endgame);
 }
 
 function renderRuns() {
@@ -708,9 +973,157 @@ function showEndgame(simState) {
   els.endgameBody.innerHTML = achievements.length
     ? `<ul>${achievements.map((item) => `<li>${item}</li>`).join("")}</ul>`
     : "<div>No achievements unlocked.</div>";
+  drawSnapshotCard(simState);
+  if (els.snapshotDownload) {
+    els.snapshotDownload.onclick = () => downloadSnapshot();
+  }
+  if (els.snapshotCopy) {
+    els.snapshotCopy.onclick = () => copySnapshot();
+  }
   els.endgameModal.classList.remove("hidden");
   uiState.endgameShown = true;
   els.nextTurn.disabled = true;
+}
+
+function drawSnapshotCard(simState) {
+  if (!els.snapshotCanvas) return;
+  const canvas = els.snapshotCanvas;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const width = canvas.width;
+  const height = canvas.height;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#fffdf9";
+  ctx.fillRect(0, 0, width, height);
+
+  const title = `Fairview — Seed ${simState.seed}`;
+  const archetype = archetypeLabel(simState.metrics);
+  const gini = computeGini(Object.values(simState.groups).map((group) => group.income));
+  const giniLabel = gini >= 0.45 ? "High Inequality" : gini >= 0.3 ? "Moderate Inequality" : "Low Inequality";
+
+  ctx.fillStyle = "#1b1f1e";
+  ctx.font = "600 22px 'Space Grotesk', sans-serif";
+  ctx.fillText(title, 24, 36);
+  ctx.font = "italic 18px 'DM Serif Text', serif";
+  ctx.fillText(archetype, 24, 64);
+  ctx.fillStyle = "#5f625f";
+  ctx.font = "14px 'Space Grotesk', sans-serif";
+  ctx.fillText(`Gini Coefficient: ${gini.toFixed(2)} (${giniLabel})`, 24, 90);
+
+  const cell = 16;
+  const gridSize = GRID_SIZE;
+  const gridWidth = cell * gridSize;
+  const gridX = width - gridWidth - 32;
+  const gridY = 60;
+
+  ctx.fillStyle = "#f1e2cf";
+  ctx.fillRect(gridX - 8, gridY - 8, gridWidth + 16, gridWidth + 16);
+  ctx.fillStyle = "#5f625f";
+  ctx.font = "12px 'Space Grotesk', sans-serif";
+  ctx.fillText("Final Skyline", gridX, gridY - 14);
+
+  simState.districts.forEach((district) => {
+    const color = district.incomeTier === 0 ? "#6aaed6" : district.incomeTier === 1 ? "#f0c36d" : "#d17b88";
+    const x = gridX + district.x * cell;
+    const y = gridY + district.y * cell;
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, cell - 2, cell - 2);
+  });
+}
+
+function archetypeLabel(metrics) {
+  const funcScore = (metrics.cohesion + metrics.capacity + metrics.legitimacy + metrics.resilience) / 4;
+  const confScore = (metrics.inequality + metrics.burden + metrics.capture + metrics.contestation) / 4;
+  if (funcScore - confScore > 12 && metrics.inequality > 55) return "The Benevolent Surveillance State";
+  if (funcScore - confScore > 12) return "The Integrated Commons";
+  if (confScore - funcScore > 12 && metrics.growth >= 60) return "The Fractured Utopia";
+  if (confScore - funcScore > 12) return "The Divided City";
+  return "The Tense Compromise";
+}
+
+function computeGini(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const mean = sorted.reduce((sum, v) => sum + v, 0) / n;
+  if (mean === 0) return 0;
+  let sumDiff = 0;
+  for (let i = 0; i < n; i += 1) {
+    for (let j = 0; j < n; j += 1) {
+      sumDiff += Math.abs(sorted[i] - sorted[j]);
+    }
+  }
+  return sumDiff / (2 * n * n * mean);
+}
+
+function downloadSnapshot() {
+  if (!els.snapshotCanvas) return;
+  const link = document.createElement("a");
+  link.href = els.snapshotCanvas.toDataURL("image/png");
+  link.download = `fairview-snapshot-${state.seed}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function copySnapshot() {
+  if (!els.snapshotCanvas || !navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === "undefined") {
+    return;
+  }
+  els.snapshotCanvas.toBlob((blob) => {
+    if (!blob) return;
+    const item = new ClipboardItem({ "image/png": blob });
+    navigator.clipboard.write([item]);
+  });
+}
+
+function showDilemmaModal(simState) {
+  if (!els.dilemmaModal) return;
+  if (!simState.pendingDilemma) {
+    els.dilemmaModal.classList.add("hidden");
+    return;
+  }
+  const event = simState.pendingDilemma;
+  els.dilemmaTitle.textContent = event.name;
+  els.dilemmaBody.textContent = event.prompt || event.text || "A dilemma requires a decision.";
+  els.dilemmaChoices.innerHTML = event.choices
+    .map(
+      (choice) => `
+      <div class="dilemma-choice">
+        <div class="dilemma-choice-title">${choice.label}</div>
+        <div class="dilemma-choice-meta">${choice.theory} • Cost: ${choice.cost}</div>
+        <div class="dilemma-choice-desc">${choice.description}</div>
+        <button class="primary" data-choice="${choice.id}">Choose</button>
+      </div>
+    `
+    )
+    .join("");
+
+  const buttons = els.dilemmaChoices.querySelectorAll("button[data-choice]");
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      resolveDilemmaChoice(button.dataset.choice);
+    });
+  });
+
+  els.dilemmaModal.classList.remove("hidden");
+}
+
+function resolveDilemmaChoice(choiceId) {
+  advanceTurn({ dilemmaChoice: choiceId });
+}
+
+function advanceTurn(options = {}) {
+  const policyIds = Array.from(uiState.selectedPolicies);
+  state = step(state, rng, { policyIds, ...options });
+  if (state.pendingDilemma) {
+    render(state);
+    showDilemmaModal(state);
+    return false;
+  }
+  uiState.selectedPolicies.clear();
+  render(state);
+  showSummary(state);
+  return true;
 }
 
 function renderTags() {
@@ -748,6 +1161,7 @@ function render(simState) {
   renderRuns();
   showStageBanner(simState);
   showEndgame(simState);
+  showDilemmaModal(simState);
 }
 
 function capitalize(text) {
@@ -789,10 +1203,11 @@ function downloadFile(filename, content) {
 
 function bindEvents() {
   els.nextTurn.addEventListener("click", () => {
-    state = step(state, rng, { policyIds: Array.from(uiState.selectedPolicies) });
-    uiState.selectedPolicies.clear();
-    render(state);
-    showSummary(state);
+    if (state.pendingDilemma) {
+      showDilemmaModal(state);
+      return;
+    }
+    advanceTurn();
   });
 
   els.summaryClose.addEventListener("click", () => {
@@ -860,6 +1275,28 @@ function bindEvents() {
       els.endgameModal.classList.add("hidden");
     });
   }
+
+  if (els.restartSim) {
+    els.restartSim.addEventListener("click", () => {
+      startSimulation(state.seed, state.scenarioKey);
+    });
+  }
+
+  if (els.tabLinks.length) {
+    els.tabLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        setActiveTab(link.dataset.tab);
+      });
+    });
+  }
+
+  if (els.mobileButtons.length) {
+    els.mobileButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setMobileView(button.dataset.mobile);
+      });
+    });
+  }
 }
 
 function init() {
@@ -871,6 +1308,12 @@ function init() {
   }
   renderTags();
   bindEvents();
+  if (els.tabLinks.length) {
+    setActiveTab(uiState.activeTab);
+  }
+  if (els.mobileButtons.length) {
+    setMobileView(uiState.mobileView);
+  }
   render(state);
 }
 

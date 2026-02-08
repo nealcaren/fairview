@@ -151,61 +151,137 @@ export const TOKEN_ICONS = {
   community: "CC",
 };
 
-const NEWS_TEMPLATES = {
+const SYNERGY_RULES = [
+  {
+    id: "extended-learning",
+    name: "Extended Learning",
+    tokens: ["school", "community"],
+    bonuses: { cohesion: 2, mobility: 2 },
+    news: "Extended learning boosted cohesion and mobility.",
+  },
+  {
+    id: "accessible-care",
+    name: "Accessible Care",
+    tokens: ["transit", "clinic"],
+    clinicRadiusBoost: 1,
+    news: "Transit integration improved clinic access.",
+  },
+  {
+    id: "community-policing",
+    name: "Community Policing",
+    tokens: ["police", "housing-policy"],
+    news: "Housing support softened policing backlash.",
+  },
+];
+
+let NEWS_TEMPLATES = {
+  growth: {
+    academic: [
+      "Investment poured in, followed closely by speculation.",
+      "The economy expanded, along with the distance between income tiers.",
+      "New jobs arrived. So did longer commutes.",
+    ],
+    civic: [
+      "Cranes reshaped the skyline faster than policies reshaped affordability.",
+      "Opportunity increased citywide, though unevenly distributed.",
+      "Economic optimism rose, tempered by rent notifications.",
+    ],
+    satirical: [
+      "Developers praised the city's momentum. Tenants praised their remaining leases.",
+      "Growth accelerated. Infrastructure requested a moment to catch up.",
+      "Economic expansion continued, unevenly distributed across sidewalks.",
+    ],
+  },
   housing: {
     academic: [
       "Housing demand rose alongside displacement pressure.",
       "Housing costs climbed, tightening local affordability.",
+      "Housing demand surged, fueled by growth and constrained by zoning.",
+      "Property values climbed, lifting some households and unmooring others.",
     ],
     civic: [
       "Housing demand surged, followed closely by housing anxiety.",
       "New towers reshaped the skyline and reshuffled the neighborhood.",
+      "Neighborhood revitalization continued, accompanied by relocation notices.",
+      "Affordable housing plans advanced through several promising meetings.",
     ],
     satirical: [
       "Luxury developments broke ground; affordable housing broke hearts.",
       "City leaders celebrated a 'vibrant housing market' as long-time residents celebrated moving in with relatives.",
+      "Cafes opened where factories once stood - and where residents once lived.",
+      "Displacement concerns rose, particularly among those displaced.",
     ],
   },
   inequality: {
     academic: [
       "Inequality widened as gains concentrated at the top.",
       "Economic growth continued, unevenly distributed across groups.",
+      "Wealth accumulation accelerated at the top, while mobility slowed below.",
+      "The opportunity ladder remained upright, though harder to reach.",
     ],
     civic: [
       "Economic growth continued, though not everyone seemed invited.",
       "Prosperity rose citywide, though it stopped at certain zip codes.",
+      "Economic security rose for some and recalculated for others.",
+      "Luxury consumption increased, followed by public discourse.",
     ],
     satirical: [
       "The wealth gap widened, providing excellent views for those at the top.",
       "Middle-income families reported feeling 'statistically stable.'",
+      "Income inequality widened, offering impressive statistical range.",
+      "The middle class stabilized, largely in theory.",
     ],
   },
   order: {
     academic: [
       "Disorder declined while legitimacy remained contested.",
       "Order improved as public trust held steady.",
+      "Public safety indicators improved; civil liberty discussions intensified.",
+      "Crime declined in monitored districts.",
     ],
     civic: [
       "Disorder declined, trust remained under review.",
       "Safety metrics improved; legitimacy metrics filed an appeal.",
+      "Residents reported feeling safer - and more watched.",
+      "Police presence increased, bringing order and observation.",
     ],
     satirical: [
       "Officials reported improved order downtown. Residents reported improved anxiety.",
       "Police presence increased, along with debates about presence itself.",
+      "Trust levels adjusted in response to enforcement expansion.",
     ],
   },
   education: {
     academic: [
       "Education capacity increased with delayed mobility gains.",
       "Learning investments rose as costs followed.",
+      "Education outcomes improved, unevenly but measurably.",
+      "Higher education expanded, redefining baseline qualifications.",
     ],
     civic: [
       "School funding rose, inspiring hope and construction delays.",
       "Students gained opportunity and student loan obligations.",
+      "School investments signaled long-term opportunity and short-term disruption.",
+      "School improvements sparked optimism - and property speculation.",
     ],
     satirical: [
       "Graduation rates climbed; tuition followed.",
       "Class sizes shrank, expectations expanded.",
+      "Students gained access to opportunity and student debt.",
+    ],
+  },
+  legitimacy: {
+    academic: [
+      "Public trust fluctuated as policies took effect.",
+      "Approval ratings rose among beneficiaries.",
+    ],
+    civic: [
+      "Residents expressed cautious optimism and cautious skepticism.",
+      "Civic confidence stabilized, pending future developments.",
+    ],
+    satirical: [
+      "Transparency initiatives were announced and studied.",
+      "We cannot govern statistics alone, said officials from the statistical office.",
     ],
   },
   bureaucracy: {
@@ -238,22 +314,54 @@ const NEWS_TEMPLATES = {
   },
 };
 
-const MEDIA_HEADLINES = {
+let MEDIA_HEADLINES = {
   growth: {
-    proGrowth: "City Economy Surges to Record Heights",
-    equityCritical: "Growth Leaves Many Residents Behind",
+    proGrowth: [
+      "City Economy Surges to Record Heights",
+      "Incentives Attract Jobs",
+    ],
+    equityCritical: [
+      "Growth Leaves Many Residents Behind",
+      "Public Funds Support Private Profit",
+    ],
   },
   order: {
-    proGrowth: "Crime Down After Police Investment",
-    equityCritical: "Surveillance Expansion Sparks Concern",
+    proGrowth: [
+      "Crime Down After Police Investment",
+    ],
+    equityCritical: [
+      "Surveillance Expansion Sparks Concern",
+    ],
   },
   housing: {
-    proGrowth: "Downtown Revitalization Continues",
-    equityCritical: "Displacement Fears Mount",
+    proGrowth: [
+      "Downtown Revitalization Continues",
+    ],
+    equityCritical: [
+      "Displacement Fears Mount",
+    ],
+  },
+  inequality: {
+    proGrowth: [
+      "Public Demonstrations Disrupt Downtown",
+      "Safety Net Strengthened",
+    ],
+    equityCritical: [
+      "Residents Rally for Economic Justice",
+      "Tax Burden Concerns Rise",
+    ],
+  },
+  education: {
+    proGrowth: [
+      "Education Investment Signals Growth",
+    ],
+    equityCritical: [
+      "Tuition and Housing Pressures Increase",
+    ],
   },
 };
 
-const CIVIC_CHARACTERS = [
+let CIVIC_CHARACTERS = [
   {
     id: "mayor",
     name: "Elena Cruz",
@@ -263,6 +371,11 @@ const CIVIC_CHARACTERS = [
       "Growth must serve everyone, or it serves no one.",
       "Order and opportunity must advance together.",
       "Our challenge is not expansion, it is inclusion.",
+      "Growth without legitimacy is instability in slow motion.",
+      "Every policy has beneficiaries - our job is balance.",
+      "A city is strongest where its trust is highest.",
+      "Progress requires investment, but also accountability.",
+      "We cannot govern statistics alone.",
     ],
   },
   {
@@ -274,6 +387,11 @@ const CIVIC_CHARACTERS = [
       "Rising rents signal confidence in our city.",
       "Investment goes where vision leads.",
       "Growth requires bold redevelopment.",
+      "Density drives prosperity.",
+      "Markets respond faster than policy.",
+      "Investment is the city's lifeblood.",
+      "If we build it, capital will come.",
+      "Revitalization is rarely comfortable.",
     ],
   },
   {
@@ -285,6 +403,11 @@ const CIVIC_CHARACTERS = [
       "Productivity is rising. Wages are thinking about it.",
       "Workers built this city; they deserve to live in it.",
       "Prosperity without equity is extraction.",
+      "Workers experience growth differently than investors.",
+      "Opportunity must be lived, not promised.",
+      "A strong city needs strong labor.",
+      "Wages are the foundation of stability.",
+      "Equity isn't redistribution - it's sustainability.",
     ],
   },
   {
@@ -296,6 +419,11 @@ const CIVIC_CHARACTERS = [
       "Neighborhoods thrive on trust, not just investment.",
       "Cohesion cannot be rezoned.",
       "We are losing familiarity faster than we are gaining prosperity.",
+      "Cohesion is built, not funded.",
+      "Neighborhoods cannot be optimized like budgets.",
+      "We are measuring prosperity but feeling dislocation.",
+      "Stability begins in trust.",
+      "Community erodes quietly.",
     ],
   },
   {
@@ -307,6 +435,11 @@ const CIVIC_CHARACTERS = [
       "Infrastructure is health policy.",
       "Housing instability is a medical risk factor.",
       "Strain shows up in clinics before it shows up in reports.",
+      "Strain always shows up in health outcomes.",
+      "Housing instability is medical risk.",
+      "Stress is measurable.",
+      "Infrastructure is preventive medicine.",
+      "Equity saves lives.",
     ],
   },
   {
@@ -318,26 +451,140 @@ const CIVIC_CHARACTERS = [
       "Innovation is our greatest civic asset.",
       "Talent follows opportunity.",
       "Disruption is uncomfortable but necessary.",
+      "Innovation solves problems growth creates.",
+      "Talent density drives development.",
+      "Disruption is uncomfortable but productive.",
+      "We're building the city of tomorrow.",
+      "Adaptation is survival.",
     ],
   },
 ];
 
+let CITIZEN_VOICES = [
+  "I got a raise. My rent got one too.",
+  "There's a new park - we just can't afford to live near it.",
+  "I feel safer walking home. I don't feel freer.",
+  "The schools are better. The pressure is worse.",
+  "My commute got shorter. My hours got longer.",
+  "We used to know everyone on this block.",
+  "Opportunity is everywhere - just not always for us.",
+];
+
+const DEFAULT_ACHIEVEMENT_LABELS = {
+  growth_at_all_costs: "Growth at All Costs",
+  well_ordered_but_watched: "Well-Ordered but Watched",
+  equity_champion: "Equity Champion",
+  committee_of_committees: "Committee of Committees",
+  golden_skyline: "Golden Skyline, Fractured Streets",
+  skyline_before_schoolhouses: "Skyline Before Schoolhouses",
+  surveillance_stability: "Surveillance Stability",
+  block_party_city: "Block Party City",
+  growth_machine: "Growth Machine",
+  balanced_metropolis: "Balanced Metropolis",
+};
+
+let ACHIEVEMENT_LABELS = { ...DEFAULT_ACHIEVEMENT_LABELS };
+let contentLoaded = false;
+
+export async function loadContent() {
+  if (contentLoaded) return;
+  contentLoaded = true;
+  const [
+    newsfeed,
+    characters,
+    whimsyEvents,
+    nicknames,
+    achievements,
+    headlines,
+    citizenQuotes,
+  ] = await Promise.all([
+    loadJson("./content/newsfeed.json"),
+    loadJson("./content/characters.json"),
+    loadJson("./content/events_whimsy.json"),
+    loadJson("./content/nicknames.json"),
+    loadJson("./content/achievements.json"),
+    loadJson("./content/headlines.json"),
+    loadJson("./content/citizen_quotes.json"),
+  ]);
+
+  if (newsfeed) {
+    NEWS_TEMPLATES = mergeTemplates(NEWS_TEMPLATES, newsfeed);
+  }
+  if (Array.isArray(characters) && characters.length) {
+    CIVIC_CHARACTERS = characters;
+  }
+  if (Array.isArray(whimsyEvents) && whimsyEvents.length) {
+    WHIMSY_EVENTS = whimsyEvents.map((event) => ({
+      ...event,
+      category: event.category || "whimsy",
+    }));
+  }
+  if (nicknames && typeof nicknames === "object") {
+    NICKNAME_RULES.forEach((rule) => {
+      const names = nicknames[rule.category];
+      if (Array.isArray(names) && names.length) {
+        rule.names = names;
+      }
+    });
+  }
+  if (achievements && typeof achievements === "object") {
+    ACHIEVEMENT_LABELS = { ...DEFAULT_ACHIEVEMENT_LABELS, ...achievements };
+  }
+  if (headlines && typeof headlines === "object") {
+    MEDIA_HEADLINES = headlines;
+  }
+  if (Array.isArray(citizenQuotes) && citizenQuotes.length) {
+    CITIZEN_VOICES = citizenQuotes;
+  }
+}
+
+async function loadJson(path) {
+  try {
+    const url = new URL(path, import.meta.url);
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+}
+
+function mergeTemplates(base, incoming) {
+  if (!incoming) return base;
+  const merged = structuredClone(base);
+  Object.entries(incoming).forEach(([category, tones]) => {
+    if (!merged[category]) merged[category] = {};
+    ["academic", "civic", "satirical"].forEach((tone) => {
+      if (Array.isArray(tones?.[tone]) && tones[tone].length) {
+        merged[category][tone] = tones[tone];
+      }
+    });
+  });
+  return merged;
+}
+
 const NICKNAME_RULES = [
   {
+    category: "ultra-wealthy",
+    names: ["Glass Harbor", "Equity Heights", "Capital Crest"],
+    condition: (district) => district.incomeTier === 2 && district.housingCost > 75,
+    retain: (district) => district.housingCost > 65,
+  },
+  {
     category: "inequality",
-    names: ["Two-Tier Terrace", "Splitview", "Dividend Heights"],
+    names: ["Two-Tier Terrace", "Splitview", "Dividend Heights", "Waiting List Ward", "Last Lease Lane", "Eviction Edge"],
     condition: (district) => district.housingCost > 70 && district.incomeTier === 0,
     retain: (district) => district.housingCost > 60,
   },
   {
     category: "gentrifying",
-    names: ["Rent Harbor", "Startup Gulch", "Artisan Alley"],
+    names: ["Rent Harbor", "Startup Gulch", "Artisan Alley", "Cafe Corridor", "Loft District", "Renovation Row"],
     condition: (district) => district.housingCost > 65 && district.access > 60,
     retain: (district) => district.housingCost > 55 && district.access > 50,
   },
   {
     category: "cohesion",
-    names: ["Block Party Row", "Neighborly Square", "Union Commons"],
+    names: ["Block Party Row", "Neighborly Square", "Union Commons", "Porchlight Square", "Founders Row", "Neighbor's End"],
     condition: (district) => district.cohesion > 70,
     retain: (district) => district.cohesion > 62,
   },
@@ -520,6 +767,16 @@ export const POLICY_CARDS = [
     cost: 25,
     tags: ["Growth", "Equity"],
     summary: "Housing supply expands; growth nudges up.",
+    quiz: {
+      question: "Sociologically, who will bear the burden of this policy?",
+      options: [
+        { id: "elite", label: "The Elite" },
+        { id: "marginalized", label: "The Marginalized" },
+        { id: "middle", label: "The Middle Class" },
+      ],
+      correctId: "marginalized",
+      discount: 0.1,
+    },
     effects: [
       { target: "institution", inst: "housing", lever: "zoning", delta: 7 },
       { target: "district", where: "access_high", key: "housingCost", delta: -5 },
@@ -729,7 +986,7 @@ export const EVENTS = [
     name: "Plant Closure",
     text: "A major employer shuts down. Working incomes fall and strain rises.",
     category: "growth",
-    templates: NEWS_TEMPLATES.inequality,
+    templates: NEWS_TEMPLATES.growth,
     effects: [
       { target: "city", key: "growth", delta: -8 },
       { target: "group", group: "Working", key: "income", delta: -8 },
@@ -775,7 +1032,7 @@ export const EVENTS = [
     name: "Tech Boom",
     text: "Tech investment surges, raising growth and inequality.",
     category: "growth",
-    templates: NEWS_TEMPLATES.inequality,
+    templates: NEWS_TEMPLATES.growth,
     effects: [
       { target: "city", key: "growth", delta: 10 },
       { target: "city", key: "inequality", delta: 8 },
@@ -863,9 +1120,46 @@ export const EVENTS = [
       { target: "city", key: "legitimacy", delta: -2 },
     ],
   },
+  {
+    id: "rent-strike",
+    name: "The Rent Strike",
+    text: "Tenants stage a rent strike demanding protections.",
+    category: "housing",
+    type: "dilemma",
+    templates: NEWS_TEMPLATES.housing,
+    prompt: "A rent strike spreads across the city. How do you respond?",
+    choices: [
+      {
+        id: "enforce-evictions",
+        label: "Enforce Evictions",
+        theory: "Conflict Theory",
+        cost: "20 Legitimacy",
+        description: "Protect property rights; growth stabilizes but grievances spike.",
+        interpretation: "Interpretation: Enforcement prioritized order and property rights, heightening conflict.",
+        effects: [
+          { target: "city", key: "legitimacy", delta: -20 },
+          { target: "city", key: "growth", delta: 4 },
+          { target: "group", group: "Marginalized", key: "grievance", delta: 10 },
+        ],
+      },
+      {
+        id: "mediated-settlement",
+        label: "Mediated Settlement",
+        theory: "Functionalism",
+        cost: "15 Budget",
+        description: "Broker a settlement to preserve cohesion; growth cools.",
+        interpretation: "Interpretation: Mediation preserved cohesion at the cost of short-term expansion.",
+        effects: [
+          { target: "city", key: "budget", delta: -15 },
+          { target: "city", key: "cohesion", delta: 5 },
+          { target: "city", key: "growth", delta: -3 },
+        ],
+      },
+    ],
+  },
 ];
 
-export const WHIMSY_EVENTS = [
+export let WHIMSY_EVENTS = [
   {
     id: "viral-dance",
     name: "Viral Dance Craze",
@@ -919,6 +1213,73 @@ export const WHIMSY_EVENTS = [
     effects: [
       { target: "city", key: "capacity", delta: 2 },
       { target: "city", key: "strain", delta: 4 },
+    ],
+  },
+  {
+    id: "true-crime-podcast",
+    name: "True Crime Podcast Boom",
+    text: "Residents reported increased vigilance and reduced sleep.",
+    category: "whimsy",
+    templates: NEWS_TEMPLATES.whimsy,
+    effects: [
+      { target: "city", key: "capture", delta: 5 },
+      { target: "city", key: "cohesion", delta: -2 },
+    ],
+  },
+  {
+    id: "street-food-renaissance",
+    name: "Street Food Renaissance",
+    text: "Neighborhood bonds strengthened through shared cuisine.",
+    category: "whimsy",
+    templates: NEWS_TEMPLATES.whimsy,
+    effects: [
+      { target: "city", key: "cohesion", delta: 6 },
+      { target: "city", key: "growth", delta: 2 },
+    ],
+  },
+  {
+    id: "streaming-set",
+    name: "Streaming Service Sets Show in City",
+    text: "Tourism rose alongside rent speculation.",
+    category: "whimsy",
+    templates: NEWS_TEMPLATES.whimsy,
+    effects: [
+      { target: "city", key: "growth", delta: 4 },
+      { target: "district", where: "access_high", key: "housingCost", delta: 3 },
+    ],
+  },
+  {
+    id: "transit-ribbon",
+    name: "Transit Ribbon-Cutting Without Transit",
+    text: "Officials celebrated future infrastructure.",
+    category: "whimsy",
+    templates: NEWS_TEMPLATES.whimsy,
+    effects: [
+      { target: "city", key: "legitimacy", delta: -4 },
+      { target: "city", key: "growth", delta: 1 },
+    ],
+  },
+  {
+    id: "livable-award",
+    name: "City Wins 'Most Livable' Award",
+    text: "Residents debated criteria.",
+    category: "whimsy",
+    templates: NEWS_TEMPLATES.whimsy,
+    effects: [
+      { target: "city", key: "legitimacy", delta: 4 },
+      { target: "city", key: "inequality", delta: 2 },
+    ],
+  },
+  {
+    id: "tech-conference",
+    name: "Tech Conference Week",
+    text: "Hotels filled; housing listings thinned.",
+    category: "whimsy",
+    templates: NEWS_TEMPLATES.whimsy,
+    effects: [
+      { target: "city", key: "growth", delta: 5 },
+      { target: "district", where: "access_high", key: "housingCost", delta: 4 },
+      { target: "city", key: "cohesion", delta: -1 },
     ],
   },
 ];
@@ -1015,6 +1376,16 @@ export function createState({ seed, scenarioKey, rng }) {
     achievements: [],
     crisisStreak: 0,
     activeCrisis: null,
+    pendingDilemma: null,
+    lastDilemmaInterpretation: null,
+    lastDilemmaChoice: null,
+    synergy: {
+      active: [],
+      bonuses: { cohesion: 0, mobility: 0 },
+      clinicBoosts: [],
+      policeMitigation: [],
+    },
+    lastSynergyIds: [],
   };
 
   initDistricts(state, rng, scenario);
@@ -1027,12 +1398,28 @@ export function createState({ seed, scenarioKey, rng }) {
 
 export function step(state, rng, actions) {
   const policyIds = actions?.policyIds ?? [];
+  const dilemmaChoice = actions?.dilemmaChoice;
+  if (state.pendingDilemma && !dilemmaChoice) {
+    return state;
+  }
   const before = captureSnapshot(state);
   const beforeDistricts = snapshotDistricts(state.districts);
 
+  let event = null;
+  if (state.pendingDilemma) {
+    event = state.pendingDilemma;
+    state.pendingDilemma = null;
+  } else {
+    event = maybeTriggerEvent(state, rng);
+    if (event && event.type === "dilemma") {
+      state.pendingDilemma = event;
+      return state;
+    }
+  }
+
   applyPolicies(state, policyIds, rng);
   processPendingEffects(state);
-  maybeTriggerEvent(state, rng);
+  applyEventOutcome(state, event, rng, dilemmaChoice);
   computeMetrics(state);
   computeDistricts(state);
   computeGroupOutcomes(state);
@@ -1050,9 +1437,12 @@ export function step(state, rng, actions) {
   addNews(state, { kind: "summary", text: `Turn summary: ${summary.funcLine} ${summary.confLine}` });
   addInterpretations(state);
   addInterpretiveLine(state, rng);
+  maybeAddSynergyNews(state);
   maybeAddCivicQuote(state, rng);
+  maybeAddCitizenVoice(state, rng);
   checkEndgame(state);
 
+  const dilemmaRecord = event && event.type === "dilemma" ? state.lastDilemmaChoice : null;
   state.history.push({
     turn: state.turn,
     year: state.year,
@@ -1060,9 +1450,13 @@ export function step(state, rng, actions) {
     policies: policyIds,
     event: state.lastEvent ? state.lastEvent.id : null,
     eventCategory: state.lastEventCategory,
+    dilemma: dilemmaRecord,
     metrics: { ...state.metrics },
     groups: structuredClone(state.groups),
   });
+  if (!event || event.type !== "dilemma") {
+    state.lastDilemmaChoice = null;
+  }
 
   state.turn += 1;
   state.year += 1;
@@ -1096,7 +1490,8 @@ export function placeToken(state, tokenType, districtId) {
   state.budget = Math.max(0, state.budget - token.cost);
   state.placementsThisTurn += 1;
   addNews(state, `Placement: ${token.label} opened in district (${district.x + 1}, ${district.y + 1}).`);
-  return { ok: true, message: "Placed." };
+  const synergies = findPlacementSynergies(state, placement);
+  return { ok: true, message: "Placed.", synergies };
 }
 
 export function applyEffects(state, effects, rng) {
@@ -1105,6 +1500,8 @@ export function applyEffects(state, effects, rng) {
 
 export function computeMetrics(state) {
   const stage = STAGES.find((s) => s.id === state.stage);
+  const synergy = computeSynergyState(state);
+  state.synergy = synergy;
   const active = activeInstitutions(state);
   const capacityValues = active.map((key) => institutionCapacity(state.institutions[key]));
   const capacityBase = average(capacityValues);
@@ -1119,7 +1516,7 @@ export function computeMetrics(state) {
   const inequalityBase = computeInequality(state);
   state.metrics.inequality = clamp(inequalityBase + state.shocks.inequality);
 
-  const cohesionBase = average(state.districts.map((d) => d.cohesion));
+  const cohesionBase = average(state.districts.map((d) => d.cohesion)) + synergy.bonuses.cohesion;
   state.metrics.cohesion = clamp(cohesionBase + state.shocks.cohesion);
 
   const growthBase = 25 + productivity * 0.4 + state.metrics.capacity * 0.2 - state.metrics.inequality * 0.1;
@@ -1137,7 +1534,9 @@ export function computeMetrics(state) {
 
   const housingCostAvg = average(state.districts.map((d) => d.housingCost));
   const educationFunding = state.institutions.education.levers.funding;
-  state.metrics.mobility = clamp(50 + educationFunding * 0.2 - housingCostAvg * 0.3 - state.metrics.inequality * 0.2 + state.shocks.mobility);
+  state.metrics.mobility = clamp(
+    50 + educationFunding * 0.2 - housingCostAvg * 0.3 - state.metrics.inequality * 0.2 + state.shocks.mobility + synergy.bonuses.mobility
+  );
 
   const eliteInfluence = state.groups.Elite.influence;
   const othersInfluence = average([state.groups.Middle.influence, state.groups.Working.influence, state.groups.Marginalized.influence]);
@@ -1291,6 +1690,7 @@ function initDistricts(state, rng, scenario) {
       nickname: null,
       nicknameCategory: null,
       lastDrivers: [],
+      housingPolicySupport: false,
     });
   }
 }
@@ -1318,16 +1718,136 @@ function institutionCapacity(inst) {
   return values.reduce((sum, v) => sum + v, 0) / values.length;
 }
 
+function isAdjacentPlacement(a, b) {
+  const dist = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  return dist <= 1;
+}
+
+function isTokenPair(a, b, typeA, typeB) {
+  return (a.type === typeA && b.type === typeB) || (a.type === typeB && b.type === typeA);
+}
+
+function computeSynergyState(state) {
+  const active = [];
+  const bonuses = { cohesion: 0, mobility: 0 };
+  const clinicBoosts = new Set();
+  const policeMitigation = new Set();
+  const seenPairs = new Set();
+
+  for (let i = 0; i < state.tokens.length; i += 1) {
+    for (let j = i + 1; j < state.tokens.length; j += 1) {
+      const a = state.tokens[i];
+      const b = state.tokens[j];
+      if (!isAdjacentPlacement(a, b)) continue;
+      if (isTokenPair(a, b, "school", "community")) {
+        const key = `extended-learning:${a.id}:${b.id}`;
+        if (!seenPairs.has(key)) {
+          seenPairs.add(key);
+          active.push({ id: "extended-learning", name: "Extended Learning" });
+          bonuses.cohesion += 2;
+          bonuses.mobility += 2;
+        }
+      }
+      if (isTokenPair(a, b, "transit", "clinic")) {
+        const key = `accessible-care:${a.id}:${b.id}`;
+        if (!seenPairs.has(key)) {
+          seenPairs.add(key);
+          active.push({ id: "accessible-care", name: "Accessible Care" });
+        }
+        if (a.type === "clinic") clinicBoosts.add(a.id);
+        if (b.type === "clinic") clinicBoosts.add(b.id);
+      }
+    }
+  }
+
+  state.tokens.forEach((placement) => {
+    if (placement.type !== "police") return;
+    const hasHousingNeighbor = state.districts.some(
+      (district) => district.housingPolicySupport && isAdjacentPlacement(placement, district)
+    );
+    if (hasHousingNeighbor) {
+      policeMitigation.add(placement.id);
+    }
+  });
+
+  if (policeMitigation.size > 0) {
+    active.push({ id: "community-policing", name: "Community Policing" });
+  }
+
+  return {
+    active,
+    bonuses,
+    clinicBoosts: Array.from(clinicBoosts),
+    policeMitigation: Array.from(policeMitigation),
+  };
+}
+
+function placementToDistrictId(placement) {
+  return placement.y * GRID_SIZE + placement.x;
+}
+
+function findPlacementSynergies(state, placement) {
+  const synergies = [];
+  const fromId = placementToDistrictId(placement);
+
+  state.tokens.forEach((other) => {
+    if (other.id === placement.id) return;
+    if (!isAdjacentPlacement(placement, other)) return;
+    if (isTokenPair(placement, other, "school", "community")) {
+      synergies.push({
+        id: "extended-learning",
+        name: "Extended Learning",
+        fromId,
+        toId: placementToDistrictId(other),
+      });
+    }
+    if (isTokenPair(placement, other, "transit", "clinic")) {
+      synergies.push({
+        id: "accessible-care",
+        name: "Accessible Care",
+        fromId,
+        toId: placementToDistrictId(other),
+      });
+    }
+  });
+
+  if (placement.type === "police") {
+    const housingNeighbor = state.districts.find(
+      (district) => district.housingPolicySupport && isAdjacentPlacement(placement, district)
+    );
+    if (housingNeighbor) {
+      synergies.push({
+        id: "community-policing",
+        name: "Community Policing",
+        fromId,
+        toId: housingNeighbor.id,
+      });
+    }
+  }
+
+  return synergies;
+}
+
 function computeTokenInfluence(state, district) {
   const influence = { access: 0, risk: 0, cohesion: 0, housingCost: 0 };
+  const synergy = state.synergy || { clinicBoosts: [], policeMitigation: [] };
+  const clinicBoosts = new Set(synergy.clinicBoosts || []);
+  const policeMitigation = new Set(synergy.policeMitigation || []);
   state.tokens.forEach((placement) => {
     const config = TOKEN_TYPES[placement.type];
     if (!config) return;
+    const radius = placement.type === "clinic" && clinicBoosts.has(placement.id)
+      ? config.radius + 1
+      : config.radius;
     const dist = Math.abs(district.x - placement.x) + Math.abs(district.y - placement.y);
-    if (dist > config.radius) return;
-    const weight = 1 - dist / (config.radius + 1);
+    if (dist > radius) return;
+    const weight = 1 - dist / (radius + 1);
     Object.entries(config.effects).forEach(([key, value]) => {
-      influence[key] += value * weight;
+      let effectValue = value;
+      if (placement.type === "police" && key === "cohesion" && policeMitigation.has(placement.id) && effectValue < 0) {
+        effectValue = 0;
+      }
+      influence[key] += effectValue * weight;
     });
   });
   return influence;
@@ -1372,6 +1892,7 @@ function updateNickname(state, district) {
 
   if (district.nickname) return;
   for (const rule of NICKNAME_RULES) {
+    if (!rule.names || rule.names.length === 0) continue;
     if (rule.condition(district, state)) {
       const index = (state.seed + district.id) % rule.names.length;
       district.nickname = rule.names[index];
@@ -1381,9 +1902,31 @@ function updateNickname(state, district) {
   }
 }
 
+function isHousingPolicy(card) {
+  return card.effects.some(
+    (effect) =>
+      (effect.target === "district" && effect.key === "housingCost") ||
+      (effect.target === "institution" && effect.inst === "housing")
+  );
+}
+
+function markHousingPolicyTargets(state, card) {
+  card.effects.forEach((effect) => {
+    if (effect.target !== "district" || effect.key !== "housingCost") return;
+    state.districts.forEach((district) => {
+      if (districtMatches(district, effect.where)) {
+        district.housingPolicySupport = true;
+      }
+    });
+  });
+}
+
 function applyPolicies(state, policyIds, rng) {
   const selected = POLICY_CARDS.filter((card) => policyIds.includes(card.id));
   selected.forEach((card) => {
+    if (isHousingPolicy(card)) {
+      markHousingPolicyTargets(state, card);
+    }
     card.effects.forEach((effect) => applyEffect(state, effect, rng));
     addNews(state, { kind: "policy", cardId: card.id, text: `Policy enacted: ${card.name}.` });
   });
@@ -1451,36 +1994,68 @@ function processPendingEffects(state) {
 }
 function maybeTriggerEvent(state, rng) {
   if (rng() > EVENT_CHANCE) {
-    state.lastEvent = null;
-    state.lastEventCategory = null;
-    return;
+    return null;
   }
 
   let event = null;
-  if (rng() < WHIMSY_EVENT_CHANCE) {
+  if (rng() < WHIMSY_EVENT_CHANCE && WHIMSY_EVENTS.length) {
     event = pickRandom(rng, WHIMSY_EVENTS);
   } else if (rng() < EXOGENOUS_EVENT_CHANCE) {
     event = pickRandom(rng, EVENTS);
   } else {
     event = selectWeightedEvent(state, rng);
   }
+  return event;
+}
 
-  state.lastEvent = event;
-  state.lastEventCategory = event ? event.category : null;
-  if (!event) return;
-  event.effects.forEach((effect) => applyEffect(state, effect, rng));
-  if (event.category === "bureaucracy") {
-    state.bureaucracyCount += 1;
+function applyDilemmaChoice(state, event, choiceId, rng) {
+  const choice = event.choices?.find((item) => item.id === choiceId) || event.choices?.[0];
+  if (!choice) return;
+  choice.effects.forEach((effect) => applyEffect(state, effect, rng));
+  state.lastDilemmaChoice = {
+    eventId: event.id,
+    choiceId: choice.id,
+    label: choice.label,
+    theory: choice.theory,
+  };
+  if (choice.interpretation) {
+    state.lastDilemmaInterpretation = choice.interpretation;
   }
+  const templates = NEWS_TEMPLATES[event.category] ?? event.templates ?? NEWS_TEMPLATES.inequality;
   addNews(state, {
     kind: "event",
     eventId: event.id,
     category: event.category,
-    templates: event.templates,
-    label: event.name,
-    fallback: `Event: ${event.name}. ${event.text}`,
+    templates,
+    label: `${event.name} (${choice.label})`,
+    fallback: `Dilemma: ${event.name}. ${choice.description}`,
     pick: Math.floor(rng() * 1000),
   });
+}
+
+function applyEventOutcome(state, event, rng, choiceId) {
+  state.lastEvent = event;
+  state.lastEventCategory = event ? event.category : null;
+  if (!event) return;
+
+  if (event.type === "dilemma") {
+    applyDilemmaChoice(state, event, choiceId, rng);
+  } else {
+    const templates = NEWS_TEMPLATES[event.category] ?? event.templates ?? NEWS_TEMPLATES.inequality;
+    event.effects.forEach((effect) => applyEffect(state, effect, rng));
+    addNews(state, {
+      kind: "event",
+      eventId: event.id,
+      category: event.category,
+      templates,
+      label: event.name,
+      fallback: `Event: ${event.name}. ${event.text}`,
+      pick: Math.floor(rng() * 1000),
+    });
+  }
+  if (event.category === "bureaucracy") {
+    state.bureaucracyCount += 1;
+  }
   maybeAddMediaHeadlines(state, rng);
 }
 
@@ -1508,6 +2083,8 @@ function computeEventWeight(state, eventId) {
   switch (eventId) {
     case "housing-bubble":
       return base + (housingCostAvg > 60 ? 3 : 0);
+    case "rent-strike":
+      return base + (housingCostAvg > 55 ? 3 : 0);
     case "protest-wave":
       return base + (state.metrics.legitimacy < 45 && avgGrievance > 55 ? 4 : 0);
     case "crime-spike":
@@ -1527,13 +2104,29 @@ function computeEventWeight(state, eventId) {
   }
 }
 
-function maybeAddMediaHeadlines(state) {
+function maybeAddMediaHeadlines(state, rng) {
   const mediaPublicInfo = state.institutions.media?.levers.publicInfo ?? 50;
   const fragmentation = clamp(50 + (state.metrics.capture - 50) * 0.5 + (50 - mediaPublicInfo) * 0.6);
   if (fragmentation < 60) return;
   const headlines = MEDIA_HEADLINES[state.lastEventCategory];
   if (!headlines) return;
-  addNews(state, { kind: "headlines", headlines, category: state.lastEventCategory });
+  addNews(state, {
+    kind: "headlines",
+    headlines: {
+      proGrowth: pickHeadlineValue(headlines.proGrowth, rng || Math.random),
+      equityCritical: pickHeadlineValue(headlines.equityCritical, rng || Math.random),
+    },
+    category: state.lastEventCategory,
+  });
+}
+
+function pickHeadlineValue(value, rng) {
+  if (!value) return "";
+  if (Array.isArray(value)) {
+    const pick = typeof rng === "function" ? rng() : Math.random();
+    return value[Math.floor(pick * value.length)];
+  }
+  return value;
 }
 function handleCrisisCascade(state) {
   const crisisCondition = state.metrics.growth > 65 && state.metrics.capacity < 45;
@@ -1625,6 +2218,7 @@ function snapshotDistricts(districts) {
     cohesion: d.cohesion,
     populationValue: d.populationValue,
     devLevel: d.devLevel,
+    incomeTier: d.incomeTier,
   }));
 }
 
@@ -1664,6 +2258,7 @@ function computeDeltas(state, before, after, beforeDistricts) {
       cohesion: district.cohesion - beforeDistrict.cohesion,
       populationValue: district.populationValue - beforeDistrict.populationValue,
       devLevel: district.devLevel - beforeDistrict.devLevel,
+      incomeTier: district.incomeTier - beforeDistrict.incomeTier,
     };
     districtDrivers[district.id] = district.lastDrivers || [];
   });
@@ -1716,12 +2311,18 @@ function addInterpretations(state) {
 }
 
 function addInterpretiveLine(state, rng) {
+  if (state.lastDilemmaInterpretation) {
+    addNews(state, { kind: "interpretive", text: state.lastDilemmaInterpretation });
+    state.lastDilemmaInterpretation = null;
+    return;
+  }
   const metricDeltas = state.lastMetricDeltas;
   const candidates = [
     { category: "housing", score: Math.abs(state.lastHousingDelta) },
     { category: "inequality", score: Math.abs(metricDeltas.inequality ?? 0) },
     { category: "order", score: Math.abs(metricDeltas.disorder ?? 0) },
     { category: "education", score: Math.abs(metricDeltas.mobility ?? 0) },
+    { category: "legitimacy", score: Math.abs(metricDeltas.legitimacy ?? 0) },
   ];
 
   if (state.lastEventCategory === "bureaucracy") {
@@ -1739,7 +2340,21 @@ function addInterpretiveLine(state, rng) {
   });
 }
 
+function maybeAddSynergyNews(state) {
+  if (!state.synergy) return;
+  const activeIds = new Set(state.synergy.active.map((item) => item.id));
+  const previousIds = new Set(state.lastSynergyIds || []);
+  activeIds.forEach((id) => {
+    if (previousIds.has(id)) return;
+    const rule = SYNERGY_RULES.find((entry) => entry.id === id);
+    if (!rule) return;
+    addNews(state, `Synergy active: ${rule.news}`);
+  });
+  state.lastSynergyIds = Array.from(activeIds);
+}
+
 function maybeAddCivicQuote(state, rng) {
+  if (!CIVIC_CHARACTERS.length) return;
   const turnsSince = state.turn - state.lastQuoteTurn;
   if (turnsSince < 2 && rng() < 0.6) return;
   if (turnsSince < 1) return;
@@ -1761,6 +2376,13 @@ function maybeAddCivicQuote(state, rng) {
     quote,
   });
   state.lastQuoteTurn = state.turn;
+}
+
+function maybeAddCitizenVoice(state, rng) {
+  if (!CITIZEN_VOICES.length) return;
+  if (rng() > 0.35) return;
+  const quote = pickRandom(rng, CITIZEN_VOICES);
+  addNews(state, { kind: "voice", text: `"${quote}"` });
 }
 
 function pickQuoteIdeology(state) {
@@ -1789,21 +2411,56 @@ function checkEndgame(state) {
 function evaluateAchievements(state) {
   const achievements = [];
   if (state.metrics.growth >= 80 && state.metrics.inequality >= 70) {
-    achievements.push("Growth at All Costs");
+    achievements.push(achievementLabel("growth_at_all_costs"));
   }
   if (state.metrics.disorder <= 30 && state.metrics.legitimacy <= 40) {
-    achievements.push("Well-Ordered but Watched");
+    achievements.push(achievementLabel("well_ordered_but_watched"));
   }
   if (state.metrics.inequality <= 35) {
-    achievements.push("Equity Champion");
+    achievements.push(achievementLabel("equity_champion"));
   }
   if (state.bureaucracyCount >= 5) {
-    achievements.push("Committee of Committees");
+    achievements.push(achievementLabel("committee_of_committees"));
   }
   if (state.metrics.growth >= 75 && state.metrics.cohesion <= 40) {
-    achievements.push("Golden Skyline, Fractured Streets");
+    achievements.push(achievementLabel("golden_skyline"));
+  }
+  const avgCohesion = average(state.districts.map((d) => d.cohesion));
+  const avgDev = average(state.districts.map((d) => d.devLevel));
+  const educationFunding = state.institutions.education.levers.funding;
+  const policing = state.institutions.justice?.levers.policing ?? 50;
+  const welfare = state.institutions.welfare?.levers.generosity ?? 50;
+
+  if (avgDev >= 2.5 && educationFunding <= 50) {
+    achievements.push(achievementLabel("skyline_before_schoolhouses"));
+  }
+  if (state.metrics.disorder <= 30 && policing >= 65 && state.metrics.legitimacy <= 40) {
+    achievements.push(achievementLabel("surveillance_stability"));
+  }
+  if (avgCohesion >= 80) {
+    achievements.push(achievementLabel("block_party_city"));
+  }
+  if (state.metrics.growth >= 80 && welfare <= 50) {
+    achievements.push(achievementLabel("growth_machine"));
+  }
+  if (
+    state.metrics.cohesion >= 70 &&
+    state.metrics.capacity >= 70 &&
+    state.metrics.legitimacy >= 70 &&
+    state.metrics.resilience >= 70 &&
+    state.metrics.mobility >= 70 &&
+    state.metrics.inequality <= 30 &&
+    state.metrics.burden <= 30 &&
+    state.metrics.capture <= 30 &&
+    state.metrics.contestation <= 30
+  ) {
+    achievements.push(achievementLabel("balanced_metropolis"));
   }
   return achievements;
+}
+
+function achievementLabel(key) {
+  return ACHIEVEMENT_LABELS[key] || DEFAULT_ACHIEVEMENT_LABELS[key] || key;
 }
 
 function pickTopChanges(metricDeltas, keys) {

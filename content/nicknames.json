@@ -1,0 +1,36 @@
+{
+  "ultra-wealthy": [
+    "Glass Harbor",
+    "Equity Heights",
+    "Capital Crest"
+  ],
+  "inequality": [
+    "Two-Tier Terrace",
+    "Splitview",
+    "Dividend Heights",
+    "Waiting List Ward",
+    "Last Lease Lane",
+    "Eviction Edge"
+  ],
+  "gentrifying": [
+    "Rent Harbor",
+    "Startup Gulch",
+    "Artisan Alley",
+    "Cafe Corridor",
+    "Loft District",
+    "Renovation Row"
+  ],
+  "cohesion": [
+    "Block Party Row",
+    "Neighborly Square",
+    "Union Commons",
+    "Porchlight Square",
+    "Founders Row",
+    "Neighbor's End"
+  ],
+  "policing": [
+    "Sirenside",
+    "Patrol Point",
+    "Bluewatch"
+  ]
+}

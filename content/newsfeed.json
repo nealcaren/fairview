@@ -1,0 +1,139 @@
+{
+  "growth": {
+    "academic": [
+      "Investment poured in, followed closely by speculation.",
+      "The economy expanded, along with the distance between income tiers.",
+      "New jobs arrived. So did longer commutes."
+    ],
+    "civic": [
+      "Cranes reshaped the skyline faster than policies reshaped affordability.",
+      "Opportunity increased citywide, though unevenly distributed.",
+      "Economic optimism rose, tempered by rent notifications."
+    ],
+    "satirical": [
+      "Developers praised the city's momentum. Tenants praised their remaining leases.",
+      "Growth accelerated. Infrastructure requested a moment to catch up.",
+      "Economic expansion continued, unevenly distributed across sidewalks."
+    ]
+  },
+  "housing": {
+    "academic": [
+      "Housing demand rose alongside displacement pressure.",
+      "Housing costs climbed, tightening local affordability.",
+      "Housing demand surged, fueled by growth and constrained by zoning.",
+      "Property values climbed, lifting some households and unmooring others."
+    ],
+    "civic": [
+      "Housing demand surged, followed closely by housing anxiety.",
+      "New towers reshaped the skyline and reshuffled the neighborhood.",
+      "Neighborhood revitalization continued, accompanied by relocation notices.",
+      "Affordable housing plans advanced through several promising meetings."
+    ],
+    "satirical": [
+      "Luxury developments broke ground; affordable housing broke hearts.",
+      "City leaders celebrated a 'vibrant housing market' as long-time residents celebrated moving in with relatives.",
+      "Cafes opened where factories once stood - and where residents once lived.",
+      "Displacement concerns rose, particularly among those displaced."
+    ]
+  },
+  "inequality": {
+    "academic": [
+      "Inequality widened as gains concentrated at the top.",
+      "Economic growth continued, unevenly distributed across groups.",
+      "Wealth accumulation accelerated at the top, while mobility slowed below.",
+      "The opportunity ladder remained upright, though harder to reach."
+    ],
+    "civic": [
+      "Economic growth continued, though not everyone seemed invited.",
+      "Prosperity rose citywide, though it stopped at certain zip codes.",
+      "Economic security rose for some and recalculated for others.",
+      "Luxury consumption increased, followed by public discourse."
+    ],
+    "satirical": [
+      "The wealth gap widened, providing excellent views for those at the top.",
+      "Middle-income families reported feeling 'statistically stable.'",
+      "Income inequality widened, offering impressive statistical range.",
+      "The middle class stabilized, largely in theory."
+    ]
+  },
+  "education": {
+    "academic": [
+      "Education capacity increased with delayed mobility gains.",
+      "Learning investments rose as costs followed.",
+      "Education outcomes improved, unevenly but measurably.",
+      "Higher education expanded, redefining baseline qualifications."
+    ],
+    "civic": [
+      "School funding rose, inspiring hope and construction delays.",
+      "Students gained opportunity and student loan obligations.",
+      "School investments signaled long-term opportunity and short-term disruption.",
+      "School improvements sparked optimism - and property speculation."
+    ],
+    "satirical": [
+      "Graduation rates climbed; tuition followed.",
+      "Class sizes shrank, expectations expanded.",
+      "Students gained access to opportunity and student debt."
+    ]
+  },
+  "order": {
+    "academic": [
+      "Disorder declined while legitimacy remained contested.",
+      "Order improved as public trust held steady.",
+      "Public safety indicators improved; civil liberty discussions intensified.",
+      "Crime declined in monitored districts."
+    ],
+    "civic": [
+      "Disorder declined, trust remained under review.",
+      "Safety metrics improved; legitimacy metrics filed an appeal.",
+      "Residents reported feeling safer - and more watched.",
+      "Police presence increased, bringing order and observation."
+    ],
+    "satirical": [
+      "Officials reported improved order downtown. Residents reported improved anxiety.",
+      "Police presence increased, along with debates about presence itself.",
+      "Trust levels adjusted in response to enforcement expansion."
+    ]
+  },
+  "legitimacy": {
+    "academic": [
+      "Public trust fluctuated as policies took effect.",
+      "Approval ratings rose among beneficiaries."
+    ],
+    "civic": [
+      "Residents expressed cautious optimism and cautious skepticism.",
+      "Civic confidence stabilized, pending future developments."
+    ],
+    "satirical": [
+      "Transparency initiatives were announced and studied.",
+      "We cannot govern statistics alone, said officials from the statistical office."
+    ]
+  },
+  "bureaucracy": {
+    "academic": [
+      "Administrative activity increased with modest public impact.",
+      "New processes were added to evaluate existing processes."
+    ],
+    "civic": [
+      "A committee was formed to study the recommendations of a previous committee.",
+      "City council approved a task force to explore future approvals."
+    ],
+    "satirical": [
+      "Public hearings were scheduled to discuss scheduling future hearings.",
+      "Officials praised the efficiency of a new efficiency initiative."
+    ]
+  },
+  "whimsy": {
+    "academic": [
+      "A cultural trend briefly shifted attention from productivity.",
+      "Public attention moved toward a civic novelty."
+    ],
+    "civic": [
+      "Citywide enthusiasm boosted cohesion more than output.",
+      "A playful moment softened civic tension."
+    ],
+    "satirical": [
+      "Productivity paused while the city went viral.",
+      "Residents asked whether vibes count as infrastructure."
+    ]
+  }
+}

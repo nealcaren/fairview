@@ -12,6 +12,10 @@
   --radius: 14px;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .drawer {
   position: fixed;
   inset: 0;
@@ -243,6 +247,69 @@ body {
   margin-bottom: 16px;
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: #f1e2cf;
+  margin-bottom: 16px;
+}
+
+.tab-link {
+  border: none;
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.tab-link.active {
+  background: var(--accent-2);
+  color: white;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fffdf9;
+  border-top: 1px solid #e7d9c6;
+  display: none;
+  gap: 8px;
+  padding: 8px 12px;
+  z-index: 9;
+}
+
+.mobile-btn {
+  flex: 1;
+  border: 1px solid #e5d8c6;
+  background: #fffdf9;
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mobile-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
 .panel-header {
   display: flex;
   justify-content: space-between;
@@ -309,6 +376,7 @@ body {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 6px;
+  position: relative;
 }
 
 .tile {
@@ -340,10 +408,131 @@ body {
   letter-spacing: 0.5px;
 }
 
+.tile.synergy {
+  animation: synergyPulse 0.9s ease-out;
+}
+
+.tile.tier-up {
+  animation: tierPop 0.9s ease-out;
+}
+
+.synergy-link {
+  position: absolute;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(46, 111, 149, 0), rgba(46, 111, 149, 0.9), rgba(46, 111, 149, 0));
+  transform-origin: left center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.floater {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  transform: translate(-50%, -50%);
+  animation: floatUp 1.1s ease-out forwards;
+}
+
+.floater.positive { color: #2f8f6a; }
+.floater.negative { color: #a63d40; }
+.floater.neutral { color: var(--ink); }
+
+.grid-floater {
+  position: absolute;
+  z-index: 3;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+  animation: gridFloat 1s ease-out forwards;
+  transform: translate(-50%, -50%);
+}
+
+.grid-floater.positive { color: #2f8f6a; }
+.grid-floater.negative { color: #a63d40; }
+
+@keyframes synergyPulse {
+  0% {
+    box-shadow: 0 0 0 rgba(46, 111, 149, 0.8);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(46, 111, 149, 0.6);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(46, 111, 149, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes tierPop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0.6);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.9);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -24px);
+  }
+}
+
+@keyframes gridFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -18px);
+  }
+}
+
+.inspector-embed {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f7efe4;
+  border: 1px solid #e7d9c6;
+}
+
+.inspector-title {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
 .inspector {
   font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 12px;
+  color: var(--ink);
   display: grid;
   gap: 6px;
 }
@@ -370,6 +559,11 @@ body {
 
 .news-item.quote {
   font-style: italic;
+}
+
+.news-item.voice {
+  font-style: italic;
+  color: var(--muted);
 }
 
 .news-item.headlines {
@@ -608,6 +802,69 @@ body {
   color: var(--muted);
 }
 
+.snapshot-card {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+#snapshot-canvas {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e7d9c6;
+  background: #fffdf9;
+}
+
+.snapshot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.dilemma-choices {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dilemma-choice {
+  background: #f7efe4;
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+
+.dilemma-choice-title {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.dilemma-choice-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dilemma-choice-desc {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.quiz-choices {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quiz-feedback {
+  margin-top: 10px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .summary-line {
   padding: 6px 8px;
   background: #f7efe4;
@@ -633,5 +890,55 @@ body {
 
   .dashboards {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .app {
+    padding-bottom: 96px;
+  }
+
+  .mobile-nav {
+    display: flex;
+  }
+
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  button {
+    min-height: 44px;
+  }
+
+  .primary,
+  .secondary,
+  .tab-link,
+  .toggle,
+  .placement-btn {
+    padding: 12px 14px;
+  }
+
+  .tile .tier,
+  .tile .density {
+    display: none;
+  }
+
+  .tile .icons {
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  #tab-actions .panel-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #tab-actions .panel-header h2 {
+    margin-bottom: 6px;
+  }
+
+  #next-turn {
+    width: 100%;
+    font-size: 15px;
   }
 }

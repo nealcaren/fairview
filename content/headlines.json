@@ -1,0 +1,46 @@
+{
+  "growth": {
+    "proGrowth": [
+      "City Economy Surges to Record Heights",
+      "Incentives Attract Jobs"
+    ],
+    "equityCritical": [
+      "Growth Leaves Many Residents Behind",
+      "Public Funds Support Private Profit"
+    ]
+  },
+  "order": {
+    "proGrowth": [
+      "Crime Down After Police Investment"
+    ],
+    "equityCritical": [
+      "Surveillance Expansion Sparks Concern"
+    ]
+  },
+  "housing": {
+    "proGrowth": [
+      "Downtown Revitalization Continues"
+    ],
+    "equityCritical": [
+      "Displacement Fears Mount"
+    ]
+  },
+  "inequality": {
+    "proGrowth": [
+      "Public Demonstrations Disrupt Downtown",
+      "Safety Net Strengthened"
+    ],
+    "equityCritical": [
+      "Residents Rally for Economic Justice",
+      "Tax Burden Concerns Rise"
+    ]
+  },
+  "education": {
+    "proGrowth": [
+      "Education Investment Signals Growth"
+    ],
+    "equityCritical": [
+      "Tuition and Housing Pressures Increase"
+    ]
+  }
+}

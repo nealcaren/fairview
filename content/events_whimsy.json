@@ -1,0 +1,113 @@
+[
+  {
+    "id": "viral-dance",
+    "name": "Viral Dance Craze",
+    "text": "City productivity dipped as synchronized dancing peaked.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "cohesion", "delta": 5 },
+      { "target": "city", "key": "growth", "delta": -2 }
+    ]
+  },
+  {
+    "id": "celebrity-downtown",
+    "name": "Celebrity Moves Downtown",
+    "text": "Star power illuminated downtown and property values.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "growth", "delta": 4 },
+      { "target": "district", "where": "access_high", "key": "housingCost", "delta": 6 }
+    ]
+  },
+  {
+    "id": "innovation-hub",
+    "name": "Innovation Hub Rebrand",
+    "text": "Residents asked whether branding counts as infrastructure.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "growth", "delta": 6 },
+      { "target": "city", "key": "legitimacy", "delta": -2 }
+    ]
+  },
+  {
+    "id": "police-tiktok",
+    "name": "Police Department Launches TikTok",
+    "text": "Community engagement rose, along with secondhand embarrassment.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "legitimacy", "randomDelta": [-4, 4] },
+      { "target": "city", "key": "cohesion", "delta": 2 }
+    ]
+  },
+  {
+    "id": "climbing-wall",
+    "name": "University Builds Climbing Wall",
+    "text": "Students gained recreation access and continued housing insecurity.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "capacity", "delta": 2 },
+      { "target": "city", "key": "strain", "delta": 4 }
+    ]
+  },
+  {
+    "id": "true-crime-podcast",
+    "name": "True Crime Podcast Boom",
+    "text": "Residents reported increased vigilance and reduced sleep.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "capture", "delta": 5 },
+      { "target": "city", "key": "cohesion", "delta": -2 }
+    ]
+  },
+  {
+    "id": "street-food-renaissance",
+    "name": "Street Food Renaissance",
+    "text": "Neighborhood bonds strengthened through shared cuisine.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "cohesion", "delta": 6 },
+      { "target": "city", "key": "growth", "delta": 2 }
+    ]
+  },
+  {
+    "id": "streaming-set",
+    "name": "Streaming Service Sets Show in City",
+    "text": "Tourism rose alongside rent speculation.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "growth", "delta": 4 },
+      { "target": "district", "where": "access_high", "key": "housingCost", "delta": 3 }
+    ]
+  },
+  {
+    "id": "transit-ribbon",
+    "name": "Transit Ribbon-Cutting Without Transit",
+    "text": "Officials celebrated future infrastructure.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "legitimacy", "delta": -4 },
+      { "target": "city", "key": "growth", "delta": 1 }
+    ]
+  },
+  {
+    "id": "livable-award",
+    "name": "City Wins 'Most Livable' Award",
+    "text": "Residents debated criteria.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "legitimacy", "delta": 4 },
+      { "target": "city", "key": "inequality", "delta": 2 }
+    ]
+  },
+  {
+    "id": "tech-conference",
+    "name": "Tech Conference Week",
+    "text": "Hotels filled; housing listings thinned.",
+    "category": "whimsy",
+    "effects": [
+      { "target": "city", "key": "growth", "delta": 5 },
+      { "target": "district", "where": "access_high", "key": "housingCost", "delta": 4 },
+      { "target": "city", "key": "cohesion", "delta": -1 }
+    ]
+  }
+]

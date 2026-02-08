@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Fairview Prototype</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -23,8 +23,8 @@
       </header>
 
       <main class="main">
-        <section class="left">
-          <div class="panel">
+        <section class="left" id="map-section">
+          <div class="panel grid-panel">
             <div class="panel-header">
               <h2>City Grid</h2>
               <div class="view-toggle" role="group" aria-label="Theory view">
@@ -35,130 +35,154 @@
             </div>
             <div id="legend" class="legend"></div>
             <div id="grid" class="grid" role="grid" aria-label="City grid"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <h2>District Inspector</h2>
+            <div class="inspector-embed">
+              <div class="inspector-title">Inspector</div>
+              <div id="inspector" class="inspector">Tap a district to inspect.</div>
             </div>
-            <div id="inspector" class="inspector">Hover or focus a district to see details.</div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Newsfeed</h2>
-              <select id="tone-select" class="sort" aria-label="Tone mode">
-                <option value="academic">Academic</option>
-                <option value="civic">Civic</option>
-                <option value="satirical">Satirical</option>
-              </select>
-            </div>
-            <div id="newsfeed" class="newsfeed"></div>
           </div>
         </section>
 
-        <section class="right">
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Simulation Setup</h2>
+        <section class="right" id="office-section">
+          <div class="tabs" role="tablist" aria-label="Game loop tabs">
+            <button class="tab-link active" data-tab="briefing" aria-selected="true" aria-controls="tab-briefing">Briefing</button>
+            <button class="tab-link" data-tab="actions" aria-selected="false" aria-controls="tab-actions">Actions</button>
+            <button class="tab-link" data-tab="data" aria-selected="false" aria-controls="tab-data">Data</button>
+          </div>
+
+          <div class="tab-pane active" id="tab-briefing" data-tab="briefing" role="tabpanel">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>City Status</h2>
+              </div>
+              <div class="control-row">
+                <div class="metric">
+                  <div class="label">Growth</div>
+                  <div id="growth" class="value"></div>
+                </div>
+                <div class="metric">
+                  <div class="label">Strain</div>
+                  <div id="strain" class="value"></div>
+                </div>
+                <div class="metric">
+                  <div class="label">Legitimacy</div>
+                  <div id="legitimacy" class="value"></div>
+                </div>
+              </div>
             </div>
-            <div class="setup">
-              <label class="field">
-                <span>Seed</span>
-                <input id="seed-input" type="number" min="1" step="1" />
-              </label>
-              <label class="field">
-                <span>Scenario</span>
-                <select id="scenario-select"></select>
-              </label>
-              <button id="start-sim" class="secondary">Start</button>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Event</h2>
+              </div>
+              <div id="event" class="event"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Newsfeed</h2>
+                <select id="tone-select" class="sort" aria-label="Tone mode">
+                  <option value="academic">Academic</option>
+                  <option value="civic">Civic</option>
+                  <option value="satirical">Satirical</option>
+                </select>
+              </div>
+              <div id="newsfeed" class="newsfeed"></div>
             </div>
           </div>
 
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Controls</h2>
-              <button id="next-turn" class="primary">Next Turn</button>
+          <div class="tab-pane" id="tab-actions" data-tab="actions" role="tabpanel">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Turn Control</h2>
+                <button id="next-turn" class="primary">Next Turn</button>
+              </div>
+              <div class="panel-note">Choose policies and tokens, then advance the turn.</div>
             </div>
-            <div class="control-row">
-              <div class="metric">
-                <div class="label">Growth</div>
-                <div id="growth" class="value"></div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Institution Tokens</h2>
+                <div class="panel-note">Select then click a district. One placement per turn.</div>
               </div>
-              <div class="metric">
-                <div class="label">Strain</div>
-                <div id="strain" class="value"></div>
+              <div id="placement-info" class="panel-note"></div>
+              <div id="placements" class="placement-list"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Policy Cards</h2>
+                <div class="panel-note">Select up to 2. Budget resets each turn.</div>
               </div>
-              <div class="metric">
-                <div class="label">Legitimacy</div>
-                <div id="legitimacy" class="value"></div>
+              <div class="policy-controls">
+                <div id="policy-tags" class="tag-list"></div>
+                <select id="policy-sort" class="sort">
+                  <option value="default">Sort: default</option>
+                  <option value="cost">Sort: cost</option>
+                  <option value="impact">Sort: impact</option>
+                </select>
               </div>
+              <div id="policies" class="card-list"></div>
             </div>
           </div>
 
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Institution Tokens</h2>
-              <div class="panel-note">Select then click a district. One placement per turn.</div>
-            </div>
-            <div id="placement-info" class="panel-note"></div>
-            <div id="placements" class="placement-list"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Policy Cards</h2>
-              <div class="panel-note">Select up to 2. Budget resets each turn.</div>
-            </div>
-            <div class="policy-controls">
-              <div id="policy-tags" class="tag-list"></div>
-              <select id="policy-sort" class="sort">
-                <option value="default">Sort: default</option>
-                <option value="cost">Sort: cost</option>
-                <option value="impact">Sort: impact</option>
-              </select>
-            </div>
-            <div id="policies" class="card-list"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Event</h2>
-            </div>
-            <div id="event" class="event"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Dashboards</h2>
-            </div>
-            <div class="dashboards">
-              <div class="dashboard">
-                <h3>Functionalism</h3>
-                <div id="func-metrics" class="metric-list"></div>
+          <div class="tab-pane" id="tab-data" data-tab="data" role="tabpanel">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Dashboards</h2>
+                <button id="restart-sim" class="secondary">Restart</button>
               </div>
-              <div class="dashboard">
-                <h3>Conflict</h3>
-                <div id="conf-metrics" class="metric-list"></div>
+              <div class="dashboards">
+                <div class="dashboard">
+                  <h3>Functionalism</h3>
+                  <div id="func-metrics" class="metric-list"></div>
+                </div>
+                <div class="dashboard">
+                  <h3>Conflict</h3>
+                  <div id="conf-metrics" class="metric-list"></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Runs</h2>
-              <div class="panel-actions">
-                <button id="export-json" class="secondary">Export JSON</button>
-                <button id="export-csv" class="secondary">Export CSV</button>
+            <div id="admin-tools" class="admin-tools">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Simulation Setup</h2>
+                </div>
+                <div class="setup">
+                  <label class="field">
+                    <span>Seed</span>
+                    <input id="seed-input" type="number" min="1" step="1" />
+                  </label>
+                  <label class="field">
+                    <span>Scenario</span>
+                    <select id="scenario-select"></select>
+                  </label>
+                  <button id="start-sim" class="secondary">Start</button>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-header">
+                  <h2>Runs</h2>
+                  <div class="panel-actions">
+                    <button id="export-json" class="secondary">Export JSON</button>
+                    <button id="export-csv" class="secondary">Export CSV</button>
+                  </div>
+                </div>
+                <div class="panel-note">Exports include seed, policies, metrics, and stage shifts.</div>
+                <div id="runs" class="runs"></div>
+                <button id="replay-seed" class="secondary">Replay Seed</button>
               </div>
             </div>
-            <div class="panel-note">Exports include seed, policies, metrics, and stage shifts.</div>
-            <div id="runs" class="runs"></div>
-            <button id="replay-seed" class="secondary">Replay Seed</button>
           </div>
         </section>
       </main>
     </div>
+
+    <nav class="mobile-nav" aria-label="Mobile view">
+      <button class="mobile-btn active" data-mobile="map">City Map</button>
+      <button class="mobile-btn" data-mobile="office">City Hall</button>
+    </nav>
 
     <div id="summary-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Turn summary">
       <div class="modal-content">
@@ -170,6 +194,27 @@
           </div>
         </div>
         <div id="summary-body" class="summary-body"></div>
+      </div>
+    </div>
+
+    <div id="dilemma-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Dilemma decision">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="dilemma-title">Dilemma</h2>
+        </div>
+        <div id="dilemma-body" class="summary-body"></div>
+        <div id="dilemma-choices" class="dilemma-choices"></div>
+      </div>
+    </div>
+
+    <div id="quiz-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Advisor question">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Advisor Question</h2>
+        </div>
+        <div id="quiz-question" class="summary-body"></div>
+        <div id="quiz-choices" class="quiz-choices"></div>
+        <div id="quiz-feedback" class="quiz-feedback"></div>
       </div>
     </div>
 
@@ -192,6 +237,13 @@
           <button id="endgame-close" class="primary">Close</button>
         </div>
         <div id="endgame-body" class="summary-body"></div>
+        <div class="snapshot-card">
+          <canvas id="snapshot-canvas" width="640" height="360" aria-label="Sociological snapshot card"></canvas>
+          <div class="snapshot-actions">
+            <button id="snapshot-download" class="secondary">Download Image</button>
+            <button id="snapshot-copy" class="secondary">Copy to Clipboard</button>
+          </div>
+        </div>
       </div>
     </div>
 

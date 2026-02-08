@@ -6,8 +6,7 @@ A sociological city-growth simulation built for SOCI 101 theory instruction.
 
 No install needed.
 
-1. Open `index.html` in a browser.
-2. Optional: run a local server for module imports.
+1. Start a local server (required for loading content packs).
 
 ```bash
 python3 -m http.server
@@ -25,6 +24,13 @@ Then visit `http://localhost:8000`.
 
 ## Where To Add Content
 
+- Newsfeed text: `content/newsfeed.json`.
+- Civic characters: `content/characters.json`.
+- Whimsy events: `content/events_whimsy.json`.
+- District nicknames: `content/nicknames.json`.
+- Media headlines: `content/headlines.json`.
+- Citizen micro-voices: `content/citizen_quotes.json`.
+- Achievement labels: `content/achievements.json`.
 - Policies: `POLICY_CARDS` in `engine.js`.
 - Events: `EVENTS` in `engine.js`.
 - Tokens: `TOKEN_TYPES` in `engine.js`.

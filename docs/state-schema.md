@@ -21,7 +21,7 @@ This document defines the stable simulation state for Fairview. All numeric fiel
 - `metrics` (object): City-wide metrics, see below.
 - `lastEventCategory` (string|null): Category of the most recent event.
 - `news[]` (array): Newsfeed entries (structured objects with `kind`, `turn`, and payload).
-- `history[]` (array): Per-turn record of metrics and group outcomes.
+- `history[]` (array): Per-turn record of metrics, groups, and dilemma choice (if any).
 - `stageTransitions[]` (array): Stage changes `{turn, stage, unlocked}`.
 - `lastMetricDeltas` (object): Metric deltas from last turn.
 - `lastGroupDeltas` (object): Group deltas from last turn.
@@ -36,6 +36,11 @@ This document defines the stable simulation state for Fairview. All numeric fiel
 - `achievements[]` (array): Achievements unlocked at endgame.
 - `crisisStreak` (number): Consecutive turns of growth-capacity mismatch.
 - `activeCrisis` (object|null): Active crisis with `turnsLeft`.
+- `pendingDilemma` (object|null): Active dilemma event awaiting a player choice.
+- `lastDilemmaInterpretation` (string|null): Override interpretation line tied to a dilemma choice.
+- `lastDilemmaChoice` (object|null): `{eventId, choiceId, label, theory}` for the last dilemma.
+- `synergy` (object): Active synergy state `{active, bonuses, clinicBoosts, policeMitigation}`.
+- `lastSynergyIds[]` (array): Active synergy ids from the previous turn.
 
 ## Metrics (0-100)
 
@@ -73,6 +78,7 @@ Each district has:
 - `nickname` (string|null): District nickname if assigned.
 - `nicknameCategory` (string|null): Nickname category.
 - `lastDrivers[]` (array): Top drivers for changes.
+- `housingPolicySupport` (boolean): District has received housing policy support.
 
 ## Groups
 

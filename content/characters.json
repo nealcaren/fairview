@@ -1,0 +1,98 @@
+[
+  {
+    "id": "mayor",
+    "name": "Elena Cruz",
+    "role": "Mayor",
+    "ideology": "legitimacy",
+    "quotes": [
+      "Growth must serve everyone, or it serves no one.",
+      "Order and opportunity must advance together.",
+      "Our challenge is not expansion, it is inclusion.",
+      "Growth without legitimacy is instability in slow motion.",
+      "Every policy has beneficiaries - our job is balance.",
+      "A city is strongest where its trust is highest.",
+      "Progress requires investment, but also accountability.",
+      "We cannot govern statistics alone."
+    ]
+  },
+  {
+    "id": "developer",
+    "name": "Lionel Price",
+    "role": "Real estate developer",
+    "ideology": "growth",
+    "quotes": [
+      "Rising rents signal confidence in our city.",
+      "Investment goes where vision leads.",
+      "Growth requires bold redevelopment.",
+      "Density drives prosperity.",
+      "Markets respond faster than policy.",
+      "Investment is the city's lifeblood.",
+      "If we build it, capital will come.",
+      "Revitalization is rarely comfortable."
+    ]
+  },
+  {
+    "id": "labor",
+    "name": "Rosa Alvarez",
+    "role": "Labor organizer",
+    "ideology": "equity",
+    "quotes": [
+      "Productivity is rising. Wages are thinking about it.",
+      "Workers built this city; they deserve to live in it.",
+      "Prosperity without equity is extraction.",
+      "Workers experience growth differently than investors.",
+      "Opportunity must be lived, not promised.",
+      "A strong city needs strong labor.",
+      "Wages are the foundation of stability.",
+      "Equity isn't redistribution - it's sustainability."
+    ]
+  },
+  {
+    "id": "community",
+    "name": "Rev. Thomas Hale",
+    "role": "Community leader",
+    "ideology": "cohesion",
+    "quotes": [
+      "Neighborhoods thrive on trust, not just investment.",
+      "Cohesion cannot be rezoned.",
+      "We are losing familiarity faster than we are gaining prosperity.",
+      "Cohesion is built, not funded.",
+      "Neighborhoods cannot be optimized like budgets.",
+      "We are measuring prosperity but feeling dislocation.",
+      "Stability begins in trust.",
+      "Community erodes quietly."
+    ]
+  },
+  {
+    "id": "health",
+    "name": "Dr. Mira Banerjee",
+    "role": "Public health director",
+    "ideology": "health",
+    "quotes": [
+      "Infrastructure is health policy.",
+      "Housing instability is a medical risk factor.",
+      "Strain shows up in clinics before it shows up in reports.",
+      "Strain always shows up in health outcomes.",
+      "Housing instability is medical risk.",
+      "Stress is measurable.",
+      "Infrastructure is preventive medicine.",
+      "Equity saves lives."
+    ]
+  },
+  {
+    "id": "tech",
+    "name": "Jax Mercer",
+    "role": "Tech entrepreneur",
+    "ideology": "growth",
+    "quotes": [
+      "Innovation is our greatest civic asset.",
+      "Talent follows opportunity.",
+      "Disruption is uncomfortable but necessary.",
+      "Innovation solves problems growth creates.",
+      "Talent density drives development.",
+      "Disruption is uncomfortable but productive.",
+      "We're building the city of tomorrow.",
+      "Adaptation is survival."
+    ]
+  }
+]
