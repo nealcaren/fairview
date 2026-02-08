@@ -377,8 +377,10 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  min-height: 34px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  overflow: hidden;
 }
 
 .legend-token {
@@ -580,10 +582,15 @@ textarea {
   min-height: 15px;
 }
 
-.tile .neighborhood svg,
-.legend-icon svg {
+.tile .neighborhood svg {
   width: 100%;
   height: 100%;
+  display: block;
+}
+
+.legend-icon svg {
+  width: 34px;
+  height: 34px;
   display: block;
 }
 
