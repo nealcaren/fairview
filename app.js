@@ -1,6 +1,5 @@
 import {
   GRID_SIZE,
-  MAX_POLICIES_PER_TURN,
   MAX_TOKENS_PER_TURN,
   STAGES,
   INSTITUTIONS,
@@ -12,6 +11,7 @@ import {
   createState,
   step,
   placeToken,
+  maxPoliciesForStage,
   loadContent,
 } from "./engine.js";
 
@@ -21,6 +21,7 @@ const els = {
   grid: document.getElementById("grid"),
   policies: document.getElementById("policies"),
   nextTurn: document.getElementById("next-turn"),
+  helpOpen: document.getElementById("help-open"),
   newsfeed: document.getElementById("newsfeed"),
   event: document.getElementById("event"),
   growth: document.getElementById("growth"),
@@ -38,6 +39,8 @@ const els = {
   viewButtons: document.querySelectorAll(".view-toggle button"),
   placementList: document.getElementById("placements"),
   placementInfo: document.getElementById("placement-info"),
+  turnChecklist: document.getElementById("turn-checklist"),
+  coachText: document.getElementById("coach-text"),
   runs: document.getElementById("runs"),
   replaySeed: document.getElementById("replay-seed"),
   summaryModal: document.getElementById("summary-modal"),
@@ -49,6 +52,7 @@ const els = {
   startSim: document.getElementById("start-sim"),
   policyTags: document.getElementById("policy-tags"),
   policySort: document.getElementById("policy-sort"),
+  policyLimitNote: document.getElementById("policy-limit-note"),
   exportJson: document.getElementById("export-json"),
   exportCsv: document.getElementById("export-csv"),
   drawer: document.getElementById("policy-drawer"),
@@ -78,6 +82,9 @@ const els = {
   snapshotCanvas: document.getElementById("snapshot-canvas"),
   snapshotDownload: document.getElementById("snapshot-download"),
   snapshotCopy: document.getElementById("snapshot-copy"),
+  onboardingModal: document.getElementById("onboarding-modal"),
+  onboardingClose: document.getElementById("onboarding-close"),
+  onboardingDismiss: document.getElementById("onboarding-dismiss"),
 };
 
 const uiState = {
@@ -97,6 +104,9 @@ const uiState = {
   pendingQuizPolicyId: null,
   quizUsed: false,
   quizDiscounts: {},
+  lastPlacementMessage: null,
+  coachMessage: null,
+  onboardingOptOut: loadOnboardingOptOut(),
 };
 
 const session = {
@@ -132,6 +142,14 @@ function loadTone() {
 
 function saveTone(tone) {
   window.localStorage.setItem("fairview-tone", tone);
+}
+
+function loadOnboardingOptOut() {
+  return window.localStorage.getItem("fairview-onboarding-optout") === "1";
+}
+
+function saveOnboardingOptOut(value) {
+  window.localStorage.setItem("fairview-onboarding-optout", value ? "1" : "0");
 }
 
 function setActiveTab(tabName) {
@@ -172,6 +190,8 @@ function startSimulation(seed, scenarioKey) {
   uiState.pendingQuizPolicyId = null;
   uiState.quizUsed = false;
   uiState.quizDiscounts = {};
+  uiState.lastPlacementMessage = null;
+  uiState.coachMessage = null;
   els.nextTurn.disabled = false;
   if (els.endgameModal) {
     els.endgameModal.classList.add("hidden");
@@ -219,13 +239,100 @@ function initScenarioSelect() {
     .join("");
   els.scenarioSelect.value = session.scenarioKey;
 }
+
+function policyLimit(simState) {
+  return maxPoliciesForStage(simState.stage);
+}
+
+function devLevelLabel(level) {
+  if (level === 3) return "III";
+  if (level === 2) return "II";
+  if (level === 1) return "I";
+  return "0";
+}
+
+function densityLabel(district) {
+  if (district.devLevel === 0) return "Undeveloped";
+  if (district.populationValue > 75) return "High";
+  if (district.populationValue > 50) return "Medium";
+  return "Low";
+}
+
+function setCoachMessage(message) {
+  uiState.coachMessage = message;
+  renderCoach(state);
+}
+
+function clearCoachMessage() {
+  uiState.coachMessage = null;
+  renderCoach(state);
+}
+
+function renderChecklist(simState) {
+  if (!els.turnChecklist) return;
+  const maxPolicies = policyLimit(simState);
+  const policyCount = uiState.selectedPolicies.size;
+  const placements = simState.placementsThisTurn;
+  const policyStatus = policyCount > 0 ? "done" : "todo";
+  const tokenStatus = placements > 0 ? "done" : "optional";
+  const nextStatus = policyCount > 0 || placements > 0 ? "ready" : "todo";
+  els.turnChecklist.innerHTML = `
+    <div class="checklist-item ${policyStatus}">
+      <span class="check-state">${policyStatus === "done" ? "Done" : "To do"}</span>
+      <span>Policy choice: ${policyCount}/${maxPolicies} selected</span>
+    </div>
+    <div class="checklist-item ${tokenStatus}">
+      <span class="check-state">${tokenStatus === "done" ? "Done" : "Optional"}</span>
+      <span>Institution placement: ${placements}/${MAX_TOKENS_PER_TURN}</span>
+    </div>
+    <div class="checklist-item ${nextStatus}">
+      <span class="check-state">${nextStatus === "ready" ? "Ready" : "To do"}</span>
+      <span>Press Next Turn to apply your choices</span>
+    </div>
+  `;
+}
+
+function defaultCoachMessage(simState) {
+  if (simState.pendingDilemma) {
+    return "A dilemma is waiting. Choose a response to continue.";
+  }
+  if (uiState.activeToken) {
+    return "Token selected. Click a developed district (Dev I+) to place it.";
+  }
+  const selected = uiState.selectedPolicies.size;
+  if (selected === 0) {
+    return `Start by choosing up to ${policyLimit(simState)} policy ${policyLimit(simState) === 1 ? "card" : "cards"}, then press Next Turn.`;
+  }
+  if (simState.placementsThisTurn === 0) {
+    return "Optional: place one institution token this turn, then press Next Turn.";
+  }
+  return "Choices set. Press Next Turn to see outcomes and updates.";
+}
+
+function renderCoach(simState) {
+  if (!els.coachText) return;
+  const message = uiState.coachMessage || defaultCoachMessage(simState);
+  els.coachText.textContent = message;
+}
+
+function openOnboarding(force = false) {
+  if (!els.onboardingModal) return;
+  if (!force && uiState.onboardingOptOut) return;
+  els.onboardingModal.classList.remove("hidden");
+}
+
+function closeOnboarding() {
+  if (!els.onboardingModal) return;
+  els.onboardingModal.classList.add("hidden");
+}
+
 function renderLegend(simState) {
   if (uiState.viewMode === "income") {
     els.legend.innerHTML = `
       <span class="dot low"></span> Low income
       <span class="dot mid"></span> Middle income
       <span class="dot high"></span> High income
-      <span class="dev-marker">Dev I/II/III</span>
+      <span class="dev-marker">Dev 0/I/II/III</span>
     `;
     return;
   }
@@ -275,6 +382,9 @@ function renderGrid(simState) {
     if (uiState.selectedDistrictId === district.id) {
       tile.classList.add("selected");
     }
+    if (district.devLevel === 0) {
+      tile.classList.add("undeveloped");
+    }
     tile.tabIndex = 0;
     tile.setAttribute("role", "button");
     tile.setAttribute("aria-label", `District ${district.x + 1}, ${district.y + 1}`);
@@ -282,9 +392,9 @@ function renderGrid(simState) {
       tile.title = `Nickname: ${district.nickname}`;
     }
 
-    const density = district.populationValue > 75 ? "High" : district.populationValue > 50 ? "Medium" : "Low";
+    const density = densityLabel(district);
     const tier = district.incomeTier === 0 ? "Low" : district.incomeTier === 1 ? "Middle" : "High";
-    const devLabel = district.devLevel === 3 ? "III" : district.devLevel === 2 ? "II" : "I";
+    const devLabel = devLevelLabel(district.devLevel);
 
     const icons = district.tokens
       .slice(0, 3)
@@ -345,10 +455,16 @@ function handleTileAction(district) {
     const result = placeToken(state, uiState.activeToken, district.id);
     if (result.ok) {
       uiState.activeToken = null;
+      uiState.lastPlacementMessage = null;
+      clearCoachMessage();
       render(state);
       if (result.synergies && result.synergies.length) {
         window.requestAnimationFrame(() => playSynergyEffect(result.synergies));
       }
+    } else {
+      uiState.lastPlacementMessage = result.message;
+      setCoachMessage(result.message);
+      renderPlacementPanel(state);
     }
     return;
   }
@@ -401,10 +517,10 @@ function renderInspector(simState) {
   const district = simState.districts.find((d) => d.id === id);
   if (!district) return;
   const tier = district.incomeTier === 0 ? "Low" : district.incomeTier === 1 ? "Middle" : "High";
-  const density = district.populationValue > 75 ? "High" : district.populationValue > 50 ? "Medium" : "Low";
+  const density = densityLabel(district);
   const deltas = simState.lastDistrictDeltas[district.id] || {};
   const drivers = simState.lastDistrictDrivers[district.id] || [];
-  const devLabel = district.devLevel === 3 ? "III" : district.devLevel === 2 ? "II" : "I";
+  const devLabel = devLevelLabel(district.devLevel);
 
   els.inspector.innerHTML = `
     <div class="inspector-section">
@@ -446,6 +562,10 @@ function tokenEffectSummary(type) {
 }
 function renderPolicies(simState) {
   els.policies.innerHTML = "";
+  const maxPolicies = policyLimit(simState);
+  if (els.policyLimitNote) {
+    els.policyLimitNote.textContent = `Select up to ${maxPolicies}. Budget resets each turn.`;
+  }
   const policies = filteredPolicies(simState);
   policies.forEach((card) => {
     const wrapper = document.createElement("div");
@@ -488,11 +608,17 @@ function renderPolicies(simState) {
         }
         const currentCost = selectedCost();
         const cardCost = policyCost(card);
-        if (uiState.selectedPolicies.size >= MAX_POLICIES_PER_TURN || currentCost + cardCost > simState.budget) {
+        if (uiState.selectedPolicies.size >= maxPolicies || currentCost + cardCost > simState.budget) {
           event.target.checked = false;
+          if (uiState.selectedPolicies.size >= maxPolicies) {
+            setCoachMessage(`Stage ${simState.stage} allows up to ${maxPolicies} policy ${maxPolicies === 1 ? "card" : "cards"} this turn.`);
+          } else {
+            setCoachMessage("That selection is over budget for this turn.");
+          }
           return;
         }
         uiState.selectedPolicies.add(id);
+        clearCoachMessage();
         showPolicyFloaters(card);
       } else {
         uiState.selectedPolicies.delete(id);
@@ -517,13 +643,14 @@ function renderPolicies(simState) {
 function updatePolicyUI(simState) {
   const checkboxes = els.policies.querySelectorAll("input[type=checkbox]");
   const currentCost = selectedCost();
+  const maxPolicies = policyLimit(simState);
   checkboxes.forEach((checkbox) => {
     const id = checkbox.dataset.card;
     const card = POLICY_CARDS.find((c) => c.id === id);
     if (!card) return;
     if (checkbox.checked) {
       checkbox.disabled = false;
-    } else if (uiState.selectedPolicies.size >= MAX_POLICIES_PER_TURN) {
+    } else if (uiState.selectedPolicies.size >= maxPolicies) {
       checkbox.disabled = true;
     } else if (currentCost + policyCost(card) > simState.budget) {
       checkbox.disabled = true;
@@ -532,6 +659,8 @@ function updatePolicyUI(simState) {
     }
   });
   els.budgetChip.textContent = `Budget ${simState.budget} (Selected ${currentCost})`;
+  renderChecklist(simState);
+  renderCoach(simState);
 }
 
 function policyCost(card) {
@@ -588,11 +717,17 @@ function resolveQuizChoice(card, choiceId) {
 function attemptSelectPolicy(card) {
   const currentCost = selectedCost();
   const cardCost = policyCost(card);
-  if (uiState.selectedPolicies.size >= MAX_POLICIES_PER_TURN || currentCost + cardCost > state.budget) {
+  if (uiState.selectedPolicies.size >= policyLimit(state) || currentCost + cardCost > state.budget) {
+    if (uiState.selectedPolicies.size >= policyLimit(state)) {
+      setCoachMessage(`Stage ${state.stage} allows up to ${policyLimit(state)} policy ${policyLimit(state) === 1 ? "card" : "cards"} this turn.`);
+    } else {
+      setCoachMessage("That selection is over budget for this turn.");
+    }
     renderPolicies(state);
     return;
   }
   uiState.selectedPolicies.add(card.id);
+  clearCoachMessage();
   showPolicyFloaters(card);
   renderPolicies(state);
 }
@@ -699,20 +834,32 @@ function policyImpact(card) {
 function renderPlacementPanel(simState) {
   els.placementList.innerHTML = "";
   Object.entries(TOKEN_TYPES).forEach(([key, token]) => {
+    const unlocked = simState.stage >= (token.minStage ?? 1);
     const button = document.createElement("button");
     button.className = "placement-btn";
     const isActive = uiState.activeToken === key;
     button.dataset.token = key;
     button.innerHTML = `
       <span>${token.label}</span>
-      <span class="badge">${token.cost}</span>
+      <span class="badge">${unlocked ? token.cost : `S${token.minStage}`}</span>
     `;
+    if (!unlocked) {
+      button.classList.add("locked");
+      button.title = `Unlocks at Stage ${token.minStage}`;
+    }
     if (isActive) {
       button.classList.add("active");
     }
     button.addEventListener("click", () => {
+      if (!unlocked) {
+        setCoachMessage(`${token.label} unlocks at Stage ${token.minStage}.`);
+        return;
+      }
       uiState.activeToken = isActive ? null : key;
-      renderPlacementPanel();
+      uiState.lastPlacementMessage = null;
+      clearCoachMessage();
+      renderPlacementPanel(state);
+      renderCoach(state);
     });
     els.placementList.appendChild(button);
   });
@@ -721,7 +868,8 @@ function renderPlacementPanel(simState) {
   const message = uiState.activeToken
     ? `Placement mode: ${TOKEN_TYPES[uiState.activeToken].label}. Click a district to place.`
     : "Select a token to place on the grid.";
-  els.placementInfo.textContent = `${message} Remaining placements: ${remaining}.`;
+  const warning = uiState.lastPlacementMessage ? ` ${uiState.lastPlacementMessage}` : "";
+  els.placementInfo.textContent = `${message} Remaining placements: ${remaining}.${warning}`;
 }
 
 function renderDashboards(simState) {
@@ -956,10 +1104,17 @@ function policyDistribution(card) {
 function showStageBanner(simState) {
   if (!simState.lastStageChange) return;
   if (uiState.stageBannerTurn === simState.lastStageChange.turn) return;
-  const unlocked = simState.lastStageChange.unlocked
+  const unlockedInstitutions = simState.lastStageChange.unlocked
     .map((key) => INSTITUTIONS[key]?.label || key)
     .join(", ");
-  els.stageBanner.textContent = `Stage ${simState.lastStageChange.to}: ${simState.lastStageChange.name}. Unlocked: ${unlocked}`;
+  const unlockedResources = (simState.lastStageChange.unlockedTokens || [])
+    .map((key) => TOKEN_TYPES[key]?.label || key)
+    .join(", ");
+  const unlockBits = [];
+  if (unlockedInstitutions) unlockBits.push(`Institutions: ${unlockedInstitutions}`);
+  if (unlockedResources) unlockBits.push(`Resources: ${unlockedResources}`);
+  const unlockText = unlockBits.length ? ` Unlocked ${unlockBits.join(" | ")}.` : "";
+  els.stageBanner.textContent = `Stage ${simState.lastStageChange.to}: ${simState.lastStageChange.name}.${unlockText}`;
   els.stageBanner.classList.remove("hidden");
   uiState.stageBannerTurn = simState.lastStageChange.turn;
   window.setTimeout(() => {
@@ -1002,12 +1157,12 @@ function drawSnapshotCard(simState) {
   const giniLabel = gini >= 0.45 ? "High Inequality" : gini >= 0.3 ? "Moderate Inequality" : "Low Inequality";
 
   ctx.fillStyle = "#1b1f1e";
-  ctx.font = "600 22px 'Space Grotesk', sans-serif";
+  ctx.font = "700 24px 'Syne', sans-serif";
   ctx.fillText(title, 24, 36);
-  ctx.font = "italic 18px 'DM Serif Text', serif";
+  ctx.font = "italic 19px 'Fraunces', serif";
   ctx.fillText(archetype, 24, 64);
   ctx.fillStyle = "#5f625f";
-  ctx.font = "14px 'Space Grotesk', sans-serif";
+  ctx.font = "13px 'Archivo Narrow', sans-serif";
   ctx.fillText(`Gini Coefficient: ${gini.toFixed(2)} (${giniLabel})`, 24, 90);
 
   const cell = 16;
@@ -1019,7 +1174,7 @@ function drawSnapshotCard(simState) {
   ctx.fillStyle = "#f1e2cf";
   ctx.fillRect(gridX - 8, gridY - 8, gridWidth + 16, gridWidth + 16);
   ctx.fillStyle = "#5f625f";
-  ctx.font = "12px 'Space Grotesk', sans-serif";
+  ctx.font = "12px 'Archivo Narrow', sans-serif";
   ctx.fillText("Final Skyline", gridX, gridY - 14);
 
   simState.districts.forEach((district) => {
@@ -1121,6 +1276,7 @@ function advanceTurn(options = {}) {
     return false;
   }
   uiState.selectedPolicies.clear();
+  uiState.lastPlacementMessage = null;
   render(state);
   showSummary(state);
   return true;
@@ -1154,6 +1310,8 @@ function render(simState) {
   renderInspector(simState);
   renderPlacementPanel(simState);
   renderPolicies(simState);
+  renderChecklist(simState);
+  renderCoach(simState);
   renderDashboards(simState);
   renderNews(simState);
   renderEvent(simState);
@@ -1204,11 +1362,33 @@ function downloadFile(filename, content) {
 function bindEvents() {
   els.nextTurn.addEventListener("click", () => {
     if (state.pendingDilemma) {
+      setCoachMessage("Choose a dilemma response before advancing.");
       showDilemmaModal(state);
       return;
     }
+    clearCoachMessage();
     advanceTurn();
   });
+
+  if (els.helpOpen) {
+    els.helpOpen.addEventListener("click", () => {
+      openOnboarding(true);
+    });
+  }
+
+  if (els.onboardingClose) {
+    els.onboardingClose.addEventListener("click", () => {
+      closeOnboarding();
+    });
+  }
+
+  if (els.onboardingDismiss) {
+    els.onboardingDismiss.addEventListener("click", () => {
+      uiState.onboardingOptOut = true;
+      saveOnboardingOptOut(true);
+      closeOnboarding();
+    });
+  }
 
   els.summaryClose.addEventListener("click", () => {
     hideSummary();
@@ -1315,6 +1495,7 @@ function init() {
     setMobileView(uiState.mobileView);
   }
   render(state);
+  openOnboarding();
 }
 
 init();

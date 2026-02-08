@@ -43,7 +43,12 @@ Stages are defined in `STAGES` in `engine.js`. A stage advances when:
 - `growth >= growthMin`
 - `capacity >= readinessMin`
 
-When a stage changes, the engine logs a news entry and exposes the unlocked institutions.
+Progressive complexity now ramps by stage:
+
+- Stage 1 starts simpler: many districts are undeveloped (`Dev 0`), only a subset of token resources is unlocked, event intensity is lower, and policy selection is capped at 1.
+- Later stages unlock more institutions, more token types, more complex events (including dilemmas), and full policy capacity.
+
+When a stage changes, the engine logs news and exposes newly unlocked institutions/resources.
 
 ## Core Constants
 
@@ -53,7 +58,9 @@ When a stage changes, the engine logs a news entry and exposes the unlocked inst
 
 ## How To Test (Manual Checklist)
 
-- Select 0, 1, and 2 policies and advance a turn.
+- In Stage 1, select 0 and 1 policy and advance a turn; verify selecting a second policy is blocked.
+- Reach Stage 2+, then verify selecting up to 2 policies is available.
+- Confirm some districts begin as `Dev 0` and can’t receive token placements until they develop.
 - Confirm budget constraints disable over-budget policies.
 - Confirm events appear at least once across 5 turns.
 - Trigger a stage transition and observe banner + news entry.

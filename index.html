@@ -14,6 +14,7 @@
           <div class="subtitle">A sociological city-growth simulation</div>
         </div>
         <div class="meta">
+          <button id="help-open" class="chip help-btn" aria-label="Open how-to-play guide">How To Play</button>
           <div class="chip" id="stage-chip">Stage 1</div>
           <div class="chip" id="turn-chip">Turn 1</div>
           <div class="chip" id="year-chip">Year 1</div>
@@ -97,6 +98,8 @@
                 <button id="next-turn" class="primary">Next Turn</button>
               </div>
               <div class="panel-note">Choose policies and tokens, then advance the turn.</div>
+              <div id="turn-checklist" class="turn-checklist"></div>
+              <div id="coach-text" class="coach-text"></div>
             </div>
 
             <div class="panel">
@@ -111,7 +114,7 @@
             <div class="panel">
               <div class="panel-header">
                 <h2>Policy Cards</h2>
-                <div class="panel-note">Select up to 2. Budget resets each turn.</div>
+                <div id="policy-limit-note" class="panel-note">Select up to 2. Budget resets each turn.</div>
               </div>
               <div class="policy-controls">
                 <div id="policy-tags" class="tag-list"></div>
@@ -242,6 +245,28 @@
           <div class="snapshot-actions">
             <button id="snapshot-download" class="secondary">Download Image</button>
             <button id="snapshot-copy" class="secondary">Copy to Clipboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="onboarding-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="How to play Fairview">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>How To Play (60 Seconds)</h2>
+          <button id="onboarding-close" class="primary">Start</button>
+        </div>
+        <div class="summary-body">
+          <div class="summary-line"><strong>Goal:</strong> grow the city without letting strain and inequality spiral.</div>
+          <div class="summary-line"><strong>Each turn:</strong></div>
+          <ol class="onboarding-list">
+            <li>Pick policy cards in the Actions tab.</li>
+            <li>Optionally place one institution token on a developed lot (Dev I+).</li>
+            <li>Press Next Turn and read the consequences.</li>
+          </ol>
+          <div class="summary-line"><strong>Early game:</strong> Stage 1 is intentionally simple. More tools and harder tradeoffs unlock in later stages.</div>
+          <div class="onboarding-actions">
+            <button id="onboarding-dismiss" class="secondary">Do Not Show Again</button>
           </div>
         </div>
       </div>

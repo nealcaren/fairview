@@ -5,6 +5,7 @@ export const MAX_TOKENS_PER_TURN = 1;
 export const EXOGENOUS_EVENT_CHANCE = 0.2;
 export const WHIMSY_EVENT_CHANCE = 0.08;
 export const ENDGAME_TURN = 20;
+export const STAGE_ONE_POLICY_LIMIT = 1;
 
 export const STAGES = [
   {
@@ -17,8 +18,8 @@ export const STAGES = [
   {
     id: 2,
     name: "Expansion City",
-    growthMin: 35,
-    readinessMin: 45,
+    growthMin: 55,
+    readinessMin: 55,
     institutions: [
       "economy",
       "family",
@@ -32,8 +33,8 @@ export const STAGES = [
   {
     id: 3,
     name: "Stratified Metropolis",
-    growthMin: 55,
-    readinessMin: 55,
+    growthMin: 65,
+    readinessMin: 60,
     institutions: [
       "economy",
       "family",
@@ -50,8 +51,8 @@ export const STAGES = [
   {
     id: 4,
     name: "Globalized City",
-    growthMin: 75,
-    readinessMin: 65,
+    growthMin: 80,
+    readinessMin: 68,
     institutions: [
       "economy",
       "family",
@@ -66,6 +67,33 @@ export const STAGES = [
     ],
   },
 ];
+
+const STAGE_EVENT_CONFIG = {
+  1: {
+    chance: 0.22,
+    exogenousChance: 0.08,
+    whimsyChance: 0,
+  },
+  2: {
+    chance: 0.3,
+    exogenousChance: 0.14,
+    whimsyChance: 0.04,
+  },
+  3: {
+    chance: EVENT_CHANCE,
+    exogenousChance: EXOGENOUS_EVENT_CHANCE,
+    whimsyChance: WHIMSY_EVENT_CHANCE,
+  },
+  4: {
+    chance: 0.42,
+    exogenousChance: 0.25,
+    whimsyChance: 0.1,
+  },
+};
+
+export function maxPoliciesForStage(stage) {
+  return stage <= 1 ? STAGE_ONE_POLICY_LIMIT : MAX_POLICIES_PER_TURN;
+}
 
 export const INSTITUTIONS = {
   economy: {
@@ -113,30 +141,35 @@ export const INSTITUTIONS = {
 export const TOKEN_TYPES = {
   school: {
     label: "School",
+    minStage: 1,
     cost: 18,
     radius: 1,
     effects: { access: 8, cohesion: 4 },
   },
   clinic: {
     label: "Clinic",
+    minStage: 2,
     cost: 20,
     radius: 1,
     effects: { risk: -6 },
   },
   transit: {
     label: "Transit Hub",
+    minStage: 2,
     cost: 20,
     radius: 1,
     effects: { access: 6, housingCost: 3 },
   },
   police: {
     label: "Police Station",
+    minStage: 3,
     cost: 18,
     radius: 1,
     effects: { risk: -5, cohesion: -2 },
   },
   community: {
     label: "Community Center",
+    minStage: 1,
     cost: 16,
     radius: 1,
     effects: { cohesion: 6, risk: -2 },
@@ -973,6 +1006,7 @@ export const EVENTS = [
   {
     id: "housing-bubble",
     name: "Housing Bubble",
+    minStage: 2,
     text: "Housing costs spike in high-access districts. Displacement pressures rise.",
     category: "housing",
     templates: NEWS_TEMPLATES.housing,
@@ -984,6 +1018,7 @@ export const EVENTS = [
   {
     id: "plant-closure",
     name: "Plant Closure",
+    minStage: 1,
     text: "A major employer shuts down. Working incomes fall and strain rises.",
     category: "growth",
     templates: NEWS_TEMPLATES.growth,
@@ -996,6 +1031,7 @@ export const EVENTS = [
   {
     id: "teacher-strike",
     name: "Teacher Strike",
+    minStage: 1,
     text: "Schools close for a week. Cohesion dips and tracking worsens.",
     category: "education",
     templates: NEWS_TEMPLATES.education,
@@ -1007,6 +1043,7 @@ export const EVENTS = [
   {
     id: "viral-scandal",
     name: "Viral Scandal",
+    minStage: 1,
     text: "Corruption scandal shakes trust in local government.",
     category: "bureaucracy",
     templates: NEWS_TEMPLATES.bureaucracy,
@@ -1018,6 +1055,7 @@ export const EVENTS = [
   {
     id: "wildfire",
     name: "Wildfire Season",
+    minStage: 3,
     text: "Environmental shock hits low-access districts hardest.",
     category: "health",
     templates: NEWS_TEMPLATES.order,
@@ -1030,6 +1068,7 @@ export const EVENTS = [
   {
     id: "tech-boom",
     name: "Tech Boom",
+    minStage: 2,
     text: "Tech investment surges, raising growth and inequality.",
     category: "growth",
     templates: NEWS_TEMPLATES.growth,
@@ -1042,6 +1081,7 @@ export const EVENTS = [
   {
     id: "protest-wave",
     name: "Protest Wave",
+    minStage: 2,
     text: "Mass demonstrations raise contestation and pressure for reform.",
     category: "inequality",
     templates: NEWS_TEMPLATES.inequality,
@@ -1054,6 +1094,7 @@ export const EVENTS = [
   {
     id: "crime-spike",
     name: "Crime Spike",
+    minStage: 2,
     text: "Public fear rises; disorder spikes in low-income districts.",
     category: "order",
     templates: NEWS_TEMPLATES.order,
@@ -1066,6 +1107,7 @@ export const EVENTS = [
   {
     id: "federal-grant",
     name: "Federal Grant",
+    minStage: 1,
     text: "A grant boosts capacity and gives breathing room in the budget.",
     category: "bureaucracy",
     templates: NEWS_TEMPLATES.bureaucracy,
@@ -1077,6 +1119,7 @@ export const EVENTS = [
   {
     id: "platform-shakeup",
     name: "Platform Shakeup",
+    minStage: 2,
     text: "A media platform faces scrutiny. Legitimacy rebounds slightly.",
     category: "bureaucracy",
     templates: NEWS_TEMPLATES.bureaucracy,
@@ -1088,6 +1131,7 @@ export const EVENTS = [
   {
     id: "housing-rights",
     name: "Housing Rights Ruling",
+    minStage: 3,
     text: "Courts mandate housing protections for vulnerable residents.",
     category: "housing",
     templates: NEWS_TEMPLATES.housing,
@@ -1100,6 +1144,7 @@ export const EVENTS = [
   {
     id: "hospital-overload",
     name: "Hospital Overload",
+    minStage: 3,
     text: "Hospitals are strained; wellbeing slips.",
     category: "health",
     templates: NEWS_TEMPLATES.order,
@@ -1112,6 +1157,7 @@ export const EVENTS = [
   {
     id: "committee-loop",
     name: "Committee Loop",
+    minStage: 1,
     text: "A task force forms to evaluate the last task force.",
     category: "bureaucracy",
     templates: NEWS_TEMPLATES.bureaucracy,
@@ -1123,6 +1169,7 @@ export const EVENTS = [
   {
     id: "rent-strike",
     name: "The Rent Strike",
+    minStage: 2,
     text: "Tenants stage a rent strike demanding protections.",
     category: "housing",
     type: "dilemma",
@@ -1163,6 +1210,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "viral-dance",
     name: "Viral Dance Craze",
+    minStage: 2,
     text: "City productivity dipped as synchronized dancing peaked.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1174,6 +1222,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "celebrity-downtown",
     name: "Celebrity Moves Downtown",
+    minStage: 2,
     text: "Star power illuminated downtown and property values.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1185,6 +1234,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "innovation-hub",
     name: "Innovation Hub Rebrand",
+    minStage: 2,
     text: "Residents asked whether branding counts as infrastructure.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1196,6 +1246,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "police-tiktok",
     name: "Police Department Launches TikTok",
+    minStage: 2,
     text: "Community engagement rose, along with secondhand embarrassment.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1207,6 +1258,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "climbing-wall",
     name: "University Builds Climbing Wall",
+    minStage: 2,
     text: "Students gained recreation access and continued housing insecurity.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1218,6 +1270,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "true-crime-podcast",
     name: "True Crime Podcast Boom",
+    minStage: 2,
     text: "Residents reported increased vigilance and reduced sleep.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1229,6 +1282,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "street-food-renaissance",
     name: "Street Food Renaissance",
+    minStage: 2,
     text: "Neighborhood bonds strengthened through shared cuisine.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1240,6 +1294,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "streaming-set",
     name: "Streaming Service Sets Show in City",
+    minStage: 2,
     text: "Tourism rose alongside rent speculation.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1251,6 +1306,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "transit-ribbon",
     name: "Transit Ribbon-Cutting Without Transit",
+    minStage: 2,
     text: "Officials celebrated future infrastructure.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1262,6 +1318,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "livable-award",
     name: "City Wins 'Most Livable' Award",
+    minStage: 2,
     text: "Residents debated criteria.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1273,6 +1330,7 @@ export let WHIMSY_EVENTS = [
   {
     id: "tech-conference",
     name: "Tech Conference Week",
+    minStage: 2,
     text: "Hotels filled; housing listings thinned.",
     category: "whimsy",
     templates: NEWS_TEMPLATES.whimsy,
@@ -1393,12 +1451,14 @@ export function createState({ seed, scenarioKey, rng }) {
   computeMetrics(state);
   resetBudget(state);
   addNews(state, "Simulation begins. Shape growth without tearing the city apart.");
+  addNews(state, "Early phase: several lots are undeveloped, policy choices are limited, and advanced resources unlock as the city grows.");
   return state;
 }
 
 export function step(state, rng, actions) {
   const policyIds = actions?.policyIds ?? [];
   const dilemmaChoice = actions?.dilemmaChoice;
+  const chosenPolicyIds = policyIds.slice(0, maxPoliciesForStage(state.stage));
   if (state.pendingDilemma && !dilemmaChoice) {
     return state;
   }
@@ -1417,7 +1477,7 @@ export function step(state, rng, actions) {
     }
   }
 
-  applyPolicies(state, policyIds, rng);
+  applyPolicies(state, chosenPolicyIds, rng);
   processPendingEffects(state);
   applyEventOutcome(state, event, rng, dilemmaChoice);
   computeMetrics(state);
@@ -1447,7 +1507,7 @@ export function step(state, rng, actions) {
     turn: state.turn,
     year: state.year,
     stage: state.stage,
-    policies: policyIds,
+    policies: chosenPolicyIds,
     event: state.lastEvent ? state.lastEvent.id : null,
     eventCategory: state.lastEventCategory,
     dilemma: dilemmaRecord,
@@ -1468,6 +1528,9 @@ export function placeToken(state, tokenType, districtId) {
   if (!token) {
     return { ok: false, message: "Unknown token." };
   }
+  if (state.stage < (token.minStage ?? 1)) {
+    return { ok: false, message: `Unlocked at Stage ${token.minStage}.` };
+  }
   if (state.placementsThisTurn >= MAX_TOKENS_PER_TURN) {
     return { ok: false, message: "Placement limit reached." };
   }
@@ -1477,6 +1540,9 @@ export function placeToken(state, tokenType, districtId) {
   const district = state.districts.find((d) => d.id === districtId);
   if (!district) {
     return { ok: false, message: "District not found." };
+  }
+  if (district.devLevel === 0) {
+    return { ok: false, message: "District is undeveloped. Grow it before placing institutions." };
   }
 
   const placement = {
@@ -1587,13 +1653,7 @@ export function computeDistricts(state) {
       district.incomeTier = 1;
     }
 
-    if (district.populationValue > 75) {
-      district.devLevel = 3;
-    } else if (district.populationValue > 50) {
-      district.devLevel = 2;
-    } else {
-      district.devLevel = 1;
-    }
+    district.devLevel = computeDevLevel(district.populationValue);
 
     updateNickname(state, district);
 
@@ -1664,15 +1724,19 @@ function makeShockMap() {
 
 function initDistricts(state, rng, scenario) {
   state.districts = [];
+  const center = (GRID_SIZE - 1) / 2;
   for (let i = 0; i < GRID_SIZE * GRID_SIZE; i += 1) {
-    const accessBias = randBetween(rng, -15, 15);
-    const riskBias = randBetween(rng, -10, 20);
-    const populationValue = randBetween(rng, 30, 60);
-    const housingCost = randBetween(rng, 30, 60);
-    const cohesion = randBetween(rng, 45, 70);
-    const incomeTier = pickWeighted(rng, scenario.incomeWeights);
     const x = i % GRID_SIZE;
     const y = Math.floor(i / GRID_SIZE);
+    const distance = Math.abs(x - center) + Math.abs(y - center);
+    const developmentChance = distance <= 1 ? 0.9 : distance <= 2 ? 0.65 : 0.35;
+    const isDeveloped = rng() < developmentChance;
+    const accessBias = isDeveloped ? randBetween(rng, -12, 15) : randBetween(rng, -20, 8);
+    const riskBias = isDeveloped ? randBetween(rng, -8, 18) : randBetween(rng, -12, 24);
+    const populationValue = isDeveloped ? randBetween(rng, 34, 68) : randBetween(rng, 8, 28);
+    const housingCost = isDeveloped ? randBetween(rng, 30, 62) : randBetween(rng, 20, 50);
+    const cohesion = isDeveloped ? randBetween(rng, 45, 72) : randBetween(rng, 36, 64);
+    const incomeTier = pickWeighted(rng, scenario.incomeWeights);
     state.districts.push({
       id: i,
       x,
@@ -1683,9 +1747,9 @@ function initDistricts(state, rng, scenario) {
       housingCost,
       cohesion,
       incomeTier,
-      access: 50,
-      risk: 40,
-      devLevel: 1,
+      access: isDeveloped ? 50 : randBetween(rng, 28, 45),
+      risk: isDeveloped ? 40 : randBetween(rng, 42, 58),
+      devLevel: computeDevLevel(populationValue),
       tokens: [],
       nickname: null,
       nicknameCategory: null,
@@ -1880,6 +1944,12 @@ function explainDistrictDrivers(state, district, placementBoost, context) {
 }
 
 function updateNickname(state, district) {
+  if (district.devLevel === 0) {
+    district.nickname = null;
+    district.nicknameCategory = null;
+    return;
+  }
+
   if (district.nickname && district.nicknameCategory) {
     const rule = NICKNAME_RULES.find((entry) => entry.category === district.nicknameCategory);
     if (rule && !rule.retain(district, state)) {
@@ -1993,17 +2063,24 @@ function processPendingEffects(state) {
   state.pendingEffects = remaining;
 }
 function maybeTriggerEvent(state, rng) {
-  if (rng() > EVENT_CHANCE) {
+  const config = STAGE_EVENT_CONFIG[state.stage] ?? STAGE_EVENT_CONFIG[3];
+  if (rng() > config.chance) {
+    return null;
+  }
+
+  const eligibleEvents = EVENTS.filter((event) => state.stage >= (event.minStage ?? 1));
+  const eligibleWhimsy = WHIMSY_EVENTS.filter((event) => state.stage >= (event.minStage ?? 1));
+  if (!eligibleEvents.length && !eligibleWhimsy.length) {
     return null;
   }
 
   let event = null;
-  if (rng() < WHIMSY_EVENT_CHANCE && WHIMSY_EVENTS.length) {
-    event = pickRandom(rng, WHIMSY_EVENTS);
-  } else if (rng() < EXOGENOUS_EVENT_CHANCE) {
-    event = pickRandom(rng, EVENTS);
+  if (rng() < config.whimsyChance && eligibleWhimsy.length) {
+    event = pickRandom(rng, eligibleWhimsy);
+  } else if (rng() < config.exogenousChance && eligibleEvents.length) {
+    event = pickRandom(rng, eligibleEvents);
   } else {
-    event = selectWeightedEvent(state, rng);
+    event = selectWeightedEvent(state, rng, eligibleEvents);
   }
   return event;
 }
@@ -2059,13 +2136,13 @@ function applyEventOutcome(state, event, rng, choiceId) {
   maybeAddMediaHeadlines(state, rng);
 }
 
-function selectWeightedEvent(state, rng) {
-  const weights = EVENTS.map((event) => ({
+function selectWeightedEvent(state, rng, pool = EVENTS) {
+  const weights = pool.map((event) => ({
     event,
     weight: computeEventWeight(state, event.id),
   })).filter((item) => item.weight > 0);
 
-  if (!weights.length) return pickRandom(rng, EVENTS);
+  if (!weights.length) return pool.length ? pickRandom(rng, pool) : null;
   const total = weights.reduce((sum, item) => sum + item.weight, 0);
   let roll = rng() * total;
   for (const item of weights) {
@@ -2159,15 +2236,23 @@ function checkStageProgression(state) {
 
   state.stage += 1;
   const unlocked = next.institutions.filter((inst) => !current.institutions.includes(inst));
+  const unlockedTokens = tokenTypesUnlockedAtStage(next.id).filter((key) => !tokenTypesUnlockedAtStage(current.id).includes(key));
   state.lastStageChange = {
     from: current.id,
     to: next.id,
     name: next.name,
     unlocked,
+    unlockedTokens,
     turn: state.turn,
   };
-  state.stageTransitions.push({ turn: state.turn, stage: next.id, unlocked });
+  state.stageTransitions.push({ turn: state.turn, stage: next.id, unlocked, unlockedTokens });
   addNews(state, `Stage shift: ${next.name}. New institutions: ${unlocked.map((i) => INSTITUTIONS[i].label).join(", ")}.`);
+  if (unlockedTokens.length) {
+    addNews(
+      state,
+      `New resources unlocked: ${unlockedTokens.map((key) => TOKEN_TYPES[key]?.label || key).join(", ")}.`
+    );
+  }
 
   if (state.metrics.inequality > 65 || state.metrics.capacity < 50) {
     addNews(state, "Crisis triggered: the city advances but institutions lag.");
@@ -2521,6 +2606,12 @@ function randBetween(rng, min, max) {
   return Math.floor(rng() * (max - min + 1)) + min;
 }
 
+function tokenTypesUnlockedAtStage(stage) {
+  return Object.entries(TOKEN_TYPES)
+    .filter(([, token]) => stage >= (token.minStage ?? 1))
+    .map(([key]) => key);
+}
+
 function pickWeighted(rng, weights) {
   const total = weights.reduce((sum, value) => sum + value, 0);
   let roll = rng() * total;
@@ -2537,6 +2628,13 @@ function clamp(value, min = 0, max = 100) {
 
 function average(values) {
   return values.length === 0 ? 0 : values.reduce((sum, v) => sum + v, 0) / values.length;
+}
+
+function computeDevLevel(populationValue) {
+  if (populationValue > 78) return 3;
+  if (populationValue > 56) return 2;
+  if (populationValue > 30) return 1;
+  return 0;
 }
 
 function capitalize(text) {

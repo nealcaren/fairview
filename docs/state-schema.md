@@ -22,7 +22,7 @@ This document defines the stable simulation state for Fairview. All numeric fiel
 - `lastEventCategory` (string|null): Category of the most recent event.
 - `news[]` (array): Newsfeed entries (structured objects with `kind`, `turn`, and payload).
 - `history[]` (array): Per-turn record of metrics, groups, and dilemma choice (if any).
-- `stageTransitions[]` (array): Stage changes `{turn, stage, unlocked}`.
+- `stageTransitions[]` (array): Stage changes `{turn, stage, unlocked, unlockedTokens}`.
 - `lastMetricDeltas` (object): Metric deltas from last turn.
 - `lastGroupDeltas` (object): Group deltas from last turn.
 - `lastDistrictDeltas` (object): District deltas from last turn.
@@ -73,7 +73,7 @@ Each district has:
 - `cohesion` (0-100): Local integration.
 - `access` (0-100): Institutional access index.
 - `risk` (0-100): Exposure to harm.
-- `devLevel` (1-3): Visual development tier.
+- `devLevel` (0-3): Visual development tier (`0` = undeveloped lot).
 - `tokens[]` (array): Token types placed here.
 - `nickname` (string|null): District nickname if assigned.
 - `nicknameCategory` (string|null): Nickname category.
