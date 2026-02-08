@@ -373,15 +373,24 @@ textarea {
   background: rgba(255, 255, 255, 0.5);
 }
 
+.legend-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+}
+
 .legend-token {
-  min-width: 16px;
-  text-align: center;
-  font-family: "Syne", sans-serif;
-  font-size: 0.76rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  min-height: 16px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.56);
-  padding: 1px 4px;
+  padding: 1px 3px;
 }
 
 .dev-marker {
@@ -527,23 +536,16 @@ textarea {
 }
 
 .tile .symbols {
-  display: grid;
-  gap: 2px;
-  align-content: start;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
-.tile .houses {
-  font-family: "Syne", sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-}
-
-.tile .money {
-  font-family: "Archivo Narrow", sans-serif;
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
-  opacity: 0.85;
+.tile .neighborhood {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
 }
 
 .tile .icons {
@@ -556,12 +558,29 @@ textarea {
 }
 
 .token-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.58);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 6px;
-  padding: 1px 4px;
-  font-size: 0.62rem;
-  font-weight: 700;
+  padding: 1px 2px;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+.tile .neighborhood svg,
+.legend-icon svg {
+  width: 34px;
+  height: 34px;
+  display: block;
+}
+
+.legend-token svg,
+.token-icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .tile.synergy {
@@ -1345,12 +1364,10 @@ input[type="checkbox"] {
     min-height: 44px;
   }
 
-  .tile .houses {
-    font-size: 0.62rem;
-  }
-
-  .tile .money {
-    font-size: 0.56rem;
+  .tile .neighborhood svg,
+  .legend-icon svg {
+    width: 28px;
+    height: 28px;
   }
 
   .tile .icons {

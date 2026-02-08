@@ -4,7 +4,6 @@ import {
   STAGES,
   INSTITUTIONS,
   TOKEN_TYPES,
-  TOKEN_ICONS,
   POLICY_CARDS,
   SCENARIOS,
   createRng,
@@ -265,18 +264,137 @@ function incomeTierLabel(tier) {
   return "Unclassified";
 }
 
-function incomeSymbol(district) {
-  if (district.devLevel === 0 || district.incomeTier === null) return "-";
-  if (district.incomeTier === 0) return "$";
-  if (district.incomeTier === 1) return "$$$";
-  return "$$$$$";
+const NEIGHBORHOOD_CELL_ORDER = [4, 1, 3, 5, 7, 0, 2, 6, 8];
+
+function populationCells(district) {
+  if (district.devLevel === 0 || district.populationValue <= 0) return 0;
+  return Math.max(1, Math.min(9, Math.round((district.populationValue / 100) * 9)));
 }
 
-function houseSymbol(district) {
-  if (district.devLevel === 0) return "..";
-  const unit = district.incomeTier === 0 ? "[]" : district.incomeTier === 1 ? "[=]" : "[#]";
-  const count = district.populationValue > 75 ? 3 : district.populationValue > 50 ? 2 : 1;
-  return Array.from({ length: count }, () => unit).join(" ");
+function emptyLotCellSvg(x, y, size, undeveloped = false) {
+  const stroke = undeveloped ? "#6f7884" : "#8d94a0";
+  const fill = undeveloped ? "none" : "rgba(255,255,255,0.25)";
+  const dash = undeveloped ? ' stroke-dasharray="1.6 1.3"' : "";
+  return `<rect x="${x + 0.5}" y="${y + 0.5}" width="${size - 1}" height="${size - 1}" rx="1.2" fill="${fill}" stroke="${stroke}" stroke-width="0.8"${dash}></rect>`;
+}
+
+function miniHouseCellSvg(tier, x, y, size) {
+  const roofLeft = x + size * 0.18;
+  const roofRight = x + size * 0.82;
+  const roofTop = y + size * 0.26;
+  const roofBottom = y + size * 0.52;
+  const baseLeft = x + size * 0.24;
+  const baseTop = y + size * 0.5;
+  const baseWidth = size * 0.52;
+  const baseHeight = size * 0.34;
+
+  if (tier === 2) {
+    return `
+      <path d="M${roofLeft} ${roofBottom} L${x + size * 0.5} ${roofTop} L${roofRight} ${roofBottom}" fill="#9b4b3d" stroke="#5c2a21" stroke-width="0.7"></path>
+      <rect x="${baseLeft}" y="${baseTop}" width="${baseWidth}" height="${baseHeight}" rx="0.5" fill="#f6ede2" stroke="#5c2a21" stroke-width="0.7"></rect>
+      <rect x="${x + size * 0.46}" y="${y + size * 0.62}" width="${size * 0.1}" height="${size * 0.22}" fill="#5c2a21"></rect>
+      <rect x="${x + size * 0.67}" y="${y + size * 0.23}" width="${size * 0.08}" height="${size * 0.17}" fill="#7f3f30"></rect>
+    `;
+  }
+  if (tier === 1) {
+    return `
+      <path d="M${roofLeft} ${roofBottom} L${x + size * 0.5} ${roofTop} L${roofRight} ${roofBottom}" fill="#8f6a39" stroke="#4f3a1f" stroke-width="0.7"></path>
+      <rect x="${baseLeft}" y="${baseTop}" width="${baseWidth}" height="${baseHeight}" rx="0.5" fill="#f4ead8" stroke="#4f3a1f" stroke-width="0.7"></rect>
+      <path d="M${x + size * 0.5} ${baseTop} V${y + size * 0.84}" stroke="#4f3a1f" stroke-width="0.5"></path>
+    `;
+  }
+  return `
+    <path d="M${roofLeft} ${roofBottom} L${x + size * 0.5} ${roofTop} L${roofRight} ${roofBottom}" fill="#4f7f8f" stroke="#24424c" stroke-width="0.7"></path>
+    <rect x="${baseLeft}" y="${baseTop}" width="${baseWidth}" height="${baseHeight}" rx="0.5" fill="#eaf1f4" stroke="#24424c" stroke-width="0.7"></rect>
+    <rect x="${x + size * 0.46}" y="${y + size * 0.62}" width="${size * 0.1}" height="${size * 0.22}" fill="#24424c"></rect>
+  `;
+}
+
+function neighborhoodSvgFromCells(tier, occupiedCells, undeveloped = false) {
+  const cell = 10;
+  const gap = 2;
+  const view = 34;
+  if (undeveloped) {
+    const lots = Array.from({ length: 9 }, (_, index) => {
+      const row = Math.floor(index / 3);
+      const col = index % 3;
+      const x = col * (cell + gap);
+      const y = row * (cell + gap);
+      return emptyLotCellSvg(x, y, cell, true);
+    }).join("");
+    return `<svg viewBox="0 0 ${view} ${view}" aria-hidden="true">${lots}</svg>`;
+  }
+
+  const occupied = Math.max(0, Math.min(9, occupiedCells));
+  const occupiedSet = new Set(NEIGHBORHOOD_CELL_ORDER.slice(0, occupied));
+  const cells = Array.from({ length: 9 }, (_, index) => {
+    const row = Math.floor(index / 3);
+    const col = index % 3;
+    const x = col * (cell + gap);
+    const y = row * (cell + gap);
+    if (occupiedSet.has(index)) {
+      return miniHouseCellSvg(tier, x, y, cell);
+    }
+    return emptyLotCellSvg(x, y, cell, false);
+  }).join("");
+  return `<svg viewBox="0 0 ${view} ${view}" aria-hidden="true">${cells}</svg>`;
+}
+
+function neighborhoodSvg(district) {
+  if (district.devLevel === 0 || district.incomeTier === null) {
+    return neighborhoodSvgFromCells(null, 0, true);
+  }
+  return neighborhoodSvgFromCells(district.incomeTier, populationCells(district), false);
+}
+
+function tokenIconSvg(type) {
+  if (type === "school") {
+    return `
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="2" y="6" width="12" height="7" rx="1" fill="#3f5e9f"></rect>
+        <path d="M2 6 L8 2.2 L14 6" fill="#2a3f6f"></path>
+        <rect x="7.1" y="8.5" width="1.8" height="4.5" fill="#dfe7f6"></rect>
+      </svg>
+    `;
+  }
+  if (type === "clinic") {
+    return `
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="2" y="2" width="12" height="12" rx="2" fill="#2f7f67"></rect>
+        <rect x="7" y="4" width="2" height="8" fill="#ecfff7"></rect>
+        <rect x="4" y="7" width="8" height="2" fill="#ecfff7"></rect>
+      </svg>
+    `;
+  }
+  if (type === "transit") {
+    return `
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="2" y="3" width="12" height="8" rx="2" fill="#3a6672"></rect>
+        <rect x="4" y="5" width="8" height="3" rx="0.8" fill="#d6ebef"></rect>
+        <circle cx="5" cy="12.5" r="1.2" fill="#25343a"></circle>
+        <circle cx="11" cy="12.5" r="1.2" fill="#25343a"></circle>
+      </svg>
+    `;
+  }
+  if (type === "police") {
+    return `
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 1.8 L13.5 3.6 L13.5 8.2 C13.5 10.8 11.6 13.2 8 14.4 C4.4 13.2 2.5 10.8 2.5 8.2 L2.5 3.6 Z" fill="#42506a"></path>
+        <path d="M8 4.4 L8.9 6.3 L11 6.6 L9.5 8 L9.9 10.1 L8 9.1 L6.1 10.1 L6.5 8 L5 6.6 L7.1 6.3 Z" fill="#eaf0ff"></path>
+      </svg>
+    `;
+  }
+  if (type === "community") {
+    return `
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <circle cx="5" cy="5" r="2" fill="#9c7241"></circle>
+        <circle cx="11" cy="5.8" r="1.8" fill="#9c7241"></circle>
+        <rect x="2.5" y="8" width="5.2" height="5" rx="2" fill="#d9bf96"></rect>
+        <rect x="8.2" y="8.2" width="5.2" height="4.8" rx="2" fill="#d9bf96"></rect>
+      </svg>
+    `;
+  }
+  return `<span aria-hidden="true">?</span>`;
 }
 
 function districtAriaLabel(district) {
@@ -385,18 +503,21 @@ function closeOnboarding() {
 function renderLegend(simState) {
   if (uiState.viewMode === "income") {
     els.legend.innerHTML = `
-      <span class="dot low"></span> $ low income
-      <span class="dot mid"></span> $$$ middle income
-      <span class="dot high"></span> $$$$$ high income
+      <span class="legend-icon">${neighborhoodSvgFromCells(0, 5, false)}</span> low-income neighborhood style
+      <span class="legend-icon">${neighborhoodSvgFromCells(1, 5, false)}</span> middle-income neighborhood style
+      <span class="legend-icon">${neighborhoodSvgFromCells(2, 5, false)}</span> high-income neighborhood style
+      <span class="legend-icon">${neighborhoodSvgFromCells(1, 2, false)}</span> fewer houses = lower population
+      <span class="legend-icon">${neighborhoodSvgFromCells(1, 8, false)}</span> more houses = higher population
+      <span class="legend-icon">${neighborhoodSvgFromCells(null, 0, true)}</span> undeveloped lots (no class)
       <span class="legend-outline dev-0"></span> gray outline = undeveloped
       <span class="legend-outline dev-1"></span> amber outline = early development
       <span class="legend-outline dev-2"></span> teal outline = growing
       <span class="legend-outline dev-3"></span> blue outline = dense
-      <span class="legend-token">S</span> school
-      <span class="legend-token">+</span> clinic
-      <span class="legend-token">=</span> transit
-      <span class="legend-token">!</span> police
-      <span class="legend-token">@</span> community
+      <span class="legend-token">${tokenIconSvg("school")}</span> school
+      <span class="legend-token">${tokenIconSvg("clinic")}</span> clinic
+      <span class="legend-token">${tokenIconSvg("transit")}</span> transit
+      <span class="legend-token">${tokenIconSvg("police")}</span> police
+      <span class="legend-token">${tokenIconSvg("community")}</span> community
     `;
     return;
   }
@@ -458,24 +579,23 @@ function renderGrid(simState) {
     const density = densityLabel(district);
     const tier = incomeTierLabel(district.incomeTier);
     const devLabel = devLevelLabel(district.devLevel);
+    const homes = populationCells(district);
     const nickname = district.nickname ? ` | ${district.nickname}` : "";
-    tile.title = `${houseSymbol(district)} ${incomeSymbol(district)} | ${tier} income | ${density} density | Dev ${devLabel}${nickname}`;
+    tile.title = `${tier} income | ${homes}/9 homes | ${density} density | Dev ${devLabel}${nickname}`;
 
     const icons = district.tokens
       .slice(0, 3)
       .map((type) => {
         const token = TOKEN_TYPES[type];
-        const icon = TOKEN_ICONS[type];
         const summary = tokenEffectSummary(type);
-        return `<span class="token-icon" title="${token.label}: ${summary}">${icon}</span>`;
+        return `<span class="token-icon" title="${token.label}: ${summary}">${tokenIconSvg(type)}</span>`;
       })
       .join(" ");
 
     tile.style.background = tileBackground(simState, district);
     tile.innerHTML = `
       <div class="symbols">
-        <div class="houses">${houseSymbol(district)}</div>
-        <div class="money">${incomeSymbol(district)}</div>
+        <div class="neighborhood">${neighborhoodSvg(district)}</div>
       </div>
       <div class="icons">${icons}</div>
     `;
