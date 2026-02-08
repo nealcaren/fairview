@@ -17,6 +17,10 @@
   --low: #78b8e5;
   --mid: #f0c468;
   --high: #de7a66;
+  --dev-0: #7f8a98;
+  --dev-1: #9c7241;
+  --dev-2: #2f7f67;
+  --dev-3: #3f5e9f;
   --positive: #2f8e5f;
   --negative: #b2443b;
   --shadow: 0 24px 56px rgba(8, 11, 18, 0.36);
@@ -36,10 +40,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--ink);
-  background:
-    radial-gradient(1200px 800px at -10% -20%, #304667 0%, transparent 52%),
-    radial-gradient(900px 700px at 115% 10%, #55301e 0%, transparent 54%),
-    linear-gradient(160deg, var(--bg-0), var(--bg-1) 45%, var(--bg-2));
+  background: var(--bg-1);
   font-family: "Fraunces", "Georgia", serif;
   position: relative;
   overflow-x: hidden;
@@ -51,11 +52,8 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  opacity: 0.18;
-  background-image:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 44px 44px;
+  opacity: 0.1;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 body::after {
@@ -64,7 +62,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  background: radial-gradient(circle at 50% 130%, rgba(0, 0, 0, 0.35), transparent 54%);
+  background: transparent;
 }
 
 button,
@@ -164,7 +162,7 @@ textarea {
 .panel {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(165deg, var(--paper-strong), var(--paper) 60%, var(--paper-muted));
+  background: var(--paper);
   border: 2px solid var(--line);
   border-radius: var(--radius);
   padding: 16px;
@@ -179,7 +177,7 @@ textarea {
   right: -2px;
   top: -2px;
   height: 5px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-3), var(--accent-2));
+  background: var(--accent);
   opacity: 0.82;
 }
 
@@ -312,7 +310,7 @@ textarea {
 }
 
 .tab-link.active {
-  background: linear-gradient(145deg, var(--accent), #d54c20);
+  background: var(--accent);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.16);
 }
@@ -366,6 +364,47 @@ textarea {
   margin-bottom: 10px;
 }
 
+.legend-outline {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 2px solid var(--dev-0);
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.legend-token {
+  min-width: 16px;
+  text-align: center;
+  font-family: "Syne", sans-serif;
+  font-size: 0.76rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.56);
+  padding: 1px 4px;
+}
+
+.dev-marker {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.legend-outline.dev-0 {
+  border-color: var(--dev-0);
+}
+
+.legend-outline.dev-1 {
+  border-color: var(--dev-1);
+}
+
+.legend-outline.dev-2 {
+  border-color: var(--dev-2);
+}
+
+.legend-outline.dev-3 {
+  border-color: var(--dev-3);
+}
+
 .dot {
   width: 10px;
   height: 10px;
@@ -385,11 +424,6 @@ textarea {
 
 .dot.high {
   background: var(--high);
-}
-
-.dev-marker {
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
 .view-toggle {
@@ -420,8 +454,8 @@ textarea {
 }
 
 .toggle.active {
-  background: linear-gradient(145deg, var(--accent-2), #126a7d);
-  border-color: #126a7d;
+  background: var(--accent-2);
+  border-color: var(--accent-2);
   color: #fff;
 }
 
@@ -436,12 +470,12 @@ textarea {
   position: relative;
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 2px solid var(--dev-0);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
     0 6px 14px rgba(20, 23, 30, 0.16);
   color: #1d1a14;
-  font-size: 0.69rem;
+  font-size: 0.72rem;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -449,6 +483,22 @@ textarea {
   cursor: pointer;
   outline: none;
   transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.tile.dev-0 {
+  border-color: var(--dev-0);
+}
+
+.tile.dev-1 {
+  border-color: var(--dev-1);
+}
+
+.tile.dev-2 {
+  border-color: var(--dev-2);
+}
+
+.tile.dev-3 {
+  border-color: var(--dev-3);
 }
 
 .tile:hover {
@@ -471,42 +521,38 @@ textarea {
 }
 
 .tile.undeveloped {
-  background:
-    repeating-linear-gradient(
-      135deg,
-      rgba(115, 125, 139, 0.5) 0,
-      rgba(115, 125, 139, 0.5) 6px,
-      rgba(152, 161, 172, 0.5) 6px,
-      rgba(152, 161, 172, 0.5) 12px
-    ) !important;
+  background: #cad1da !important;
   color: #1b1a17;
-  border-style: dashed;
+  border-style: solid;
 }
 
-.tile.undeveloped .tier {
-  opacity: 0.65;
+.tile .symbols {
+  display: grid;
+  gap: 2px;
+  align-content: start;
 }
 
-.tile .tier {
-  font-weight: 700;
-  letter-spacing: 0.04em;
+.tile .houses {
+  font-family: "Syne", sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
 }
 
-.tile .density {
-  opacity: 0.8;
+.tile .money {
+  font-family: "Archivo Narrow", sans-serif;
   font-size: 0.66rem;
-}
-
-.tile .dev-marker {
-  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
 }
 
 .tile .icons {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  font-size: 0.62rem;
+  font-size: 0.66rem;
   letter-spacing: 0.02em;
+  margin-top: auto;
 }
 
 .token-icon {
@@ -514,7 +560,7 @@ textarea {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 6px;
   padding: 1px 4px;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 700;
 }
 
@@ -529,7 +575,7 @@ textarea {
 .synergy-link {
   position: absolute;
   height: 3px;
-  background: linear-gradient(90deg, rgba(30, 142, 165, 0), rgba(30, 142, 165, 0.9), rgba(30, 142, 165, 0));
+  background: rgba(30, 142, 165, 0.85);
   transform-origin: left center;
   pointer-events: none;
   z-index: 2;
@@ -714,7 +760,7 @@ textarea {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(var(--accent), var(--accent-2));
+  background: var(--accent);
   opacity: 0.25;
 }
 
@@ -773,7 +819,7 @@ textarea {
 
 .primary {
   border: 1px solid #ba3f19;
-  background: linear-gradient(145deg, var(--accent), #d44c20);
+  background: var(--accent);
   color: #fff;
   padding: 8px 16px;
   letter-spacing: 0.06em;
@@ -829,9 +875,9 @@ textarea {
 }
 
 .tag.active {
-  background: linear-gradient(145deg, var(--accent-2), #126a7d);
+  background: var(--accent-2);
   color: white;
-  border-color: #126a7d;
+  border-color: var(--accent-2);
 }
 
 .policy-actions {
@@ -1044,7 +1090,7 @@ input[type="checkbox"] {
   width: min(560px, 92vw);
   max-height: min(86vh, 820px);
   overflow-y: auto;
-  background: linear-gradient(165deg, var(--paper-strong), var(--paper));
+  background: var(--paper);
   border: 2px solid var(--line);
   border-radius: 16px;
   padding: 18px;
@@ -1100,7 +1146,7 @@ input[type="checkbox"] {
 .summary-prompt {
   padding: 8px;
   border-radius: 10px;
-  background: linear-gradient(145deg, #f2e2c1, #ebd5ad);
+  background: #f0debf;
   border: 1px solid rgba(150, 127, 90, 0.35);
   color: var(--ink);
   font-weight: 700;
@@ -1165,7 +1211,7 @@ input[type="checkbox"] {
   border: 2px solid var(--line);
   border-bottom: none;
   border-radius: 16px 16px 0 0;
-  background: linear-gradient(165deg, var(--paper-strong), var(--paper));
+  background: var(--paper);
   padding: 16px;
   box-shadow: 0 -16px 30px rgba(0, 0, 0, 0.32);
 }
@@ -1203,7 +1249,7 @@ input[type="checkbox"] {
   top: 18px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(145deg, var(--accent), #d2491d);
+  background: var(--accent);
   border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 999px;
   color: #fff;
@@ -1299,13 +1345,16 @@ input[type="checkbox"] {
     min-height: 44px;
   }
 
-  .tile .tier,
-  .tile .density {
-    display: none;
+  .tile .houses {
+    font-size: 0.62rem;
+  }
+
+  .tile .money {
+    font-size: 0.56rem;
   }
 
   .tile .icons {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
   }
 
   .panel-header {

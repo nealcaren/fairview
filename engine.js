@@ -177,11 +177,11 @@ export const TOKEN_TYPES = {
 };
 
 export const TOKEN_ICONS = {
-  school: "SC",
-  clinic: "CL",
-  transit: "TR",
-  police: "PO",
-  community: "CC",
+  school: "S",
+  clinic: "+",
+  transit: "=",
+  police: "!",
+  community: "@",
 };
 
 const SYNERGY_RULES = [
@@ -1446,8 +1446,9 @@ export function createState({ seed, scenarioKey, rng }) {
     lastSynergyIds: [],
   };
 
-  initDistricts(state, rng, scenario);
-  applyScenario(state, scenario, rng);
+  initDistricts(state, rng);
+  applyScenario(state, scenario);
+  assignIncomeTiers(state);
   computeMetrics(state);
   resetBudget(state);
   addNews(state, "Simulation begins. Shape growth without tearing the city apart.");
@@ -1644,18 +1645,7 @@ export function computeDistricts(state) {
     );
     const populationChange = state.metrics.growth * 0.1 + district.access * 0.05 - district.housingCost * 0.08;
     district.populationValue = clamp(district.populationValue + populationChange, 0, 100);
-
-    if (district.housingCost > 70 && district.access > 60) {
-      district.incomeTier = 2;
-    } else if (district.housingCost < 40) {
-      district.incomeTier = 0;
-    } else {
-      district.incomeTier = 1;
-    }
-
     district.devLevel = computeDevLevel(district.populationValue);
-
-    updateNickname(state, district);
 
     district.lastDrivers = explainDistrictDrivers(state, district, placementBoost, {
       education,
@@ -1666,6 +1656,79 @@ export function computeDistricts(state) {
       health,
     });
   });
+  assignIncomeTiers(state);
+  state.districts.forEach((district) => updateNickname(state, district));
+}
+
+function assignIncomeTiers(state) {
+  const weights = scenarioIncomeWeights(state);
+  state.districts.forEach((district) => {
+    if (district.devLevel === 0) {
+      district.incomeTier = null;
+    }
+  });
+
+  const developed = state.districts.filter((district) => district.devLevel > 0);
+  if (!developed.length) return;
+
+  const scoreById = new Map(
+    developed.map((district) => [
+      district.id,
+      district.housingCost * 0.45 + district.access * 0.35 + district.populationValue * 0.15 + district.cohesion * 0.1 - district.risk * 0.2,
+    ])
+  );
+  const ranked = [...developed].sort((a, b) => {
+    const scoreDiff = (scoreById.get(a.id) ?? 0) - (scoreById.get(b.id) ?? 0);
+    if (scoreDiff !== 0) return scoreDiff;
+    return a.id - b.id;
+  });
+
+  const counts = weightedCounts(ranked.length, weights);
+  const lowCutoff = counts[0];
+  const midCutoff = counts[0] + counts[1];
+
+  ranked.forEach((district, index) => {
+    if (index < lowCutoff) {
+      district.incomeTier = 0;
+    } else if (index < midCutoff) {
+      district.incomeTier = 1;
+    } else {
+      district.incomeTier = 2;
+    }
+  });
+}
+
+function scenarioIncomeWeights(state) {
+  const scenario = SCENARIOS[state.scenarioKey] ?? SCENARIOS.default;
+  const fallback = SCENARIOS.default.incomeWeights;
+  const weights = scenario.incomeWeights ?? fallback;
+  if (!Array.isArray(weights) || weights.length !== 3) return fallback;
+  return weights;
+}
+
+function weightedCounts(total, weights) {
+  const safeWeights = weights.map((value) => (Number.isFinite(value) && value > 0 ? value : 0));
+  const weightSum = safeWeights.reduce((sum, value) => sum + value, 0);
+  if (weightSum <= 0) {
+    const fallbackMid = Math.floor(total * 0.6);
+    const fallbackLow = Math.floor((total - fallbackMid) / 2);
+    return [fallbackLow, fallbackMid, total - fallbackLow - fallbackMid];
+  }
+
+  const normalized = safeWeights.map((value) => value / weightSum);
+  const raw = normalized.map((weight) => weight * total);
+  const counts = raw.map((value) => Math.floor(value));
+  let remainder = total - counts.reduce((sum, value) => sum + value, 0);
+
+  if (remainder > 0) {
+    const fractions = raw.map((value, index) => ({ index, fraction: value - counts[index] }));
+    fractions.sort((a, b) => b.fraction - a.fraction);
+    for (let i = 0; i < remainder; i += 1) {
+      const target = fractions[i % fractions.length];
+      counts[target.index] += 1;
+    }
+  }
+  return counts;
 }
 
 export function computeGroupOutcomes(state) {
@@ -1722,7 +1785,7 @@ function makeShockMap() {
   };
 }
 
-function initDistricts(state, rng, scenario) {
+function initDistricts(state, rng) {
   state.districts = [];
   const center = (GRID_SIZE - 1) / 2;
   for (let i = 0; i < GRID_SIZE * GRID_SIZE; i += 1) {
@@ -1736,7 +1799,6 @@ function initDistricts(state, rng, scenario) {
     const populationValue = isDeveloped ? randBetween(rng, 34, 68) : randBetween(rng, 8, 28);
     const housingCost = isDeveloped ? randBetween(rng, 30, 62) : randBetween(rng, 20, 50);
     const cohesion = isDeveloped ? randBetween(rng, 45, 72) : randBetween(rng, 36, 64);
-    const incomeTier = pickWeighted(rng, scenario.incomeWeights);
     state.districts.push({
       id: i,
       x,
@@ -1746,7 +1808,7 @@ function initDistricts(state, rng, scenario) {
       populationValue,
       housingCost,
       cohesion,
-      incomeTier,
+      incomeTier: null,
       access: isDeveloped ? 50 : randBetween(rng, 28, 45),
       risk: isDeveloped ? 40 : randBetween(rng, 42, 58),
       devLevel: computeDevLevel(populationValue),
@@ -1759,7 +1821,7 @@ function initDistricts(state, rng, scenario) {
   }
 }
 
-function applyScenario(state, scenario, rng) {
+function applyScenario(state, scenario) {
   Object.entries(scenario.metricAdjust).forEach(([key, value]) => {
     state.metrics[key] = clamp(state.metrics[key] + value);
   });
@@ -1768,7 +1830,6 @@ function applyScenario(state, scenario, rng) {
     district.housingCost = clamp(district.housingCost + scenario.districtAdjust.housingCost);
     district.cohesion = clamp(district.cohesion + scenario.districtAdjust.cohesion);
     district.risk = clamp(district.risk + scenario.districtAdjust.risk);
-    district.incomeTier = pickWeighted(rng, scenario.incomeWeights);
   });
 }
 
@@ -2264,7 +2325,10 @@ function checkStageProgression(state) {
 function computeInequality(state) {
   const incomes = Object.values(state.groups).map((g) => g.income);
   const diff = Math.max(...incomes) - Math.min(...incomes);
-  const tiers = state.districts.map((d) => d.incomeTier);
+  const tiers = state.districts.map((d) => d.incomeTier).filter((tier) => tier !== null);
+  if (!tiers.length) {
+    return clamp(diff * 0.7);
+  }
   const tierAvg = average(tiers);
   const tierVariance = average(tiers.map((t) => (t - tierAvg) ** 2));
   return clamp(diff * 0.7 + tierVariance * 30);
@@ -2343,7 +2407,7 @@ function computeDeltas(state, before, after, beforeDistricts) {
       cohesion: district.cohesion - beforeDistrict.cohesion,
       populationValue: district.populationValue - beforeDistrict.populationValue,
       devLevel: district.devLevel - beforeDistrict.devLevel,
-      incomeTier: district.incomeTier - beforeDistrict.incomeTier,
+      incomeTier: numericIncomeTier(district.incomeTier) - numericIncomeTier(beforeDistrict.incomeTier),
     };
     districtDrivers[district.id] = district.lastDrivers || [];
   });
@@ -2352,6 +2416,10 @@ function computeDeltas(state, before, after, beforeDistricts) {
   if (state.districts.length > 0) {
     state.lastHousingDelta = (housingSum - housingBeforeSum) / state.districts.length;
   }
+}
+
+function numericIncomeTier(tier) {
+  return Number.isFinite(tier) ? tier : -1;
 }
 function summarizeTurn(state) {
   const metricDeltas = state.lastMetricDeltas;
@@ -2610,16 +2678,6 @@ function tokenTypesUnlockedAtStage(stage) {
   return Object.entries(TOKEN_TYPES)
     .filter(([, token]) => stage >= (token.minStage ?? 1))
     .map(([key]) => key);
-}
-
-function pickWeighted(rng, weights) {
-  const total = weights.reduce((sum, value) => sum + value, 0);
-  let roll = rng() * total;
-  for (let i = 0; i < weights.length; i += 1) {
-    roll -= weights[i];
-    if (roll <= 0) return i;
-  }
-  return weights.length - 1;
 }
 
 function clamp(value, min = 0, max = 100) {

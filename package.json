@@ -1,0 +1,11 @@
+{
+  "name": "fairview",
+  "private": true,
+  "scripts": {
+    "test:e2e": "npx @playwright/test test",
+    "test:e2e:headed": "npx @playwright/test test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

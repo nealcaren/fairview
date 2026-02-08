@@ -24,9 +24,9 @@ const els = {
   helpOpen: document.getElementById("help-open"),
   newsfeed: document.getElementById("newsfeed"),
   event: document.getElementById("event"),
-  growth: document.getElementById("growth"),
-  strain: document.getElementById("strain"),
-  legitimacy: document.getElementById("legitimacy"),
+  citySize: document.getElementById("city-size"),
+  cityBudget: document.getElementById("city-budget"),
+  publicSupport: document.getElementById("public-support"),
   funcMetrics: document.getElementById("func-metrics"),
   confMetrics: document.getElementById("conf-metrics"),
   stageChip: document.getElementById("stage-chip"),
@@ -258,6 +258,62 @@ function densityLabel(district) {
   return "Low";
 }
 
+function incomeTierLabel(tier) {
+  if (tier === 0) return "Low";
+  if (tier === 1) return "Middle";
+  if (tier === 2) return "High";
+  return "Unclassified";
+}
+
+function incomeSymbol(district) {
+  if (district.devLevel === 0 || district.incomeTier === null) return "-";
+  if (district.incomeTier === 0) return "$";
+  if (district.incomeTier === 1) return "$$$";
+  return "$$$$$";
+}
+
+function houseSymbol(district) {
+  if (district.devLevel === 0) return "..";
+  const unit = district.incomeTier === 0 ? "[]" : district.incomeTier === 1 ? "[=]" : "[#]";
+  const count = district.populationValue > 75 ? 3 : district.populationValue > 50 ? 2 : 1;
+  return Array.from({ length: count }, () => unit).join(" ");
+}
+
+function districtAriaLabel(district) {
+  const developed = district.devLevel > 0 ? "developed" : "undeveloped";
+  const income = incomeTierLabel(district.incomeTier);
+  const density = densityLabel(district);
+  return `District ${district.x + 1}, ${district.y + 1}, ${developed}, ${density} population, ${income} income, access ${Math.round(district.access)}.`;
+}
+
+function formatCurrency(value) {
+  return `$${Math.round(value)}`;
+}
+
+function citySize(simState) {
+  return simState.districts.filter((district) => district.devLevel > 0).length;
+}
+
+function citySizeDelta(simState) {
+  let delta = 0;
+  simState.districts.forEach((district) => {
+    const districtDelta = simState.lastDistrictDeltas[district.id];
+    if (!districtDelta || !Number.isFinite(districtDelta.devLevel)) return;
+    const beforeDev = district.devLevel - districtDelta.devLevel;
+    const wasDeveloped = beforeDev > 0;
+    const isDeveloped = district.devLevel > 0;
+    if (!wasDeveloped && isDeveloped) delta += 1;
+    if (wasDeveloped && !isDeveloped) delta -= 1;
+  });
+  return delta;
+}
+
+function signedNumber(value) {
+  const rounded = Math.round(value);
+  if (rounded > 0) return `+${rounded}`;
+  return `${rounded}`;
+}
+
 function setCoachMessage(message) {
   uiState.coachMessage = message;
   renderCoach(state);
@@ -297,7 +353,7 @@ function defaultCoachMessage(simState) {
     return "A dilemma is waiting. Choose a response to continue.";
   }
   if (uiState.activeToken) {
-    return "Token selected. Click a developed district (Dev I+) to place it.";
+    return "Token selected. Click a developed district (any lot with a colored outline) to place it.";
   }
   const selected = uiState.selectedPolicies.size;
   if (selected === 0) {
@@ -329,10 +385,18 @@ function closeOnboarding() {
 function renderLegend(simState) {
   if (uiState.viewMode === "income") {
     els.legend.innerHTML = `
-      <span class="dot low"></span> Low income
-      <span class="dot mid"></span> Middle income
-      <span class="dot high"></span> High income
-      <span class="dev-marker">Dev 0/I/II/III</span>
+      <span class="dot low"></span> $ low income
+      <span class="dot mid"></span> $$$ middle income
+      <span class="dot high"></span> $$$$$ high income
+      <span class="legend-outline dev-0"></span> gray outline = undeveloped
+      <span class="legend-outline dev-1"></span> amber outline = early development
+      <span class="legend-outline dev-2"></span> teal outline = growing
+      <span class="legend-outline dev-3"></span> blue outline = dense
+      <span class="legend-token">S</span> school
+      <span class="legend-token">+</span> clinic
+      <span class="legend-token">=</span> transit
+      <span class="legend-token">!</span> police
+      <span class="legend-token">@</span> community
     `;
     return;
   }
@@ -354,18 +418,19 @@ function renderLegend(simState) {
 }
 
 function tileBackground(simState, district) {
+  if (district.devLevel === 0) {
+    return "#cad1da";
+  }
   if (uiState.viewMode === "functionalism") {
     const integration = clamp(50 + (district.cohesion - simState.metrics.disorder) * 0.5, 0, 100);
-    const color = blendColor("#d1e8d5", "#2f8f6a", integration / 100);
-    return `linear-gradient(135deg, ${color} 0%, rgba(255,255,255,0.9) 100%)`;
+    return blendColor("#d1e8d5", "#2f8f6a", integration / 100);
   }
   if (uiState.viewMode === "conflict") {
     const burden = clamp((district.risk + district.housingCost) / 2);
-    const color = blendColor("#b8d0c8", "#a63d40", burden / 100);
-    return `linear-gradient(135deg, ${color} 0%, rgba(255,255,255,0.9) 100%)`;
+    return blendColor("#b8d0c8", "#a63d40", burden / 100);
   }
   const tierClass = district.incomeTier === 0 ? "low" : district.incomeTier === 1 ? "mid" : "high";
-  return `linear-gradient(135deg, var(--${tierClass}) 0%, rgba(255,255,255,0.85) 100%)`;
+  return `var(--${tierClass})`;
 }
 
 function renderGrid(simState) {
@@ -375,6 +440,7 @@ function renderGrid(simState) {
     const tile = document.createElement("div");
     tile.className = "tile";
     tile.dataset.id = district.id;
+    tile.classList.add(`dev-${district.devLevel}`);
     const tierDelta = simState.lastDistrictDeltas[district.id]?.incomeTier ?? 0;
     if (tierDelta > 0) {
       tile.classList.add("tier-up");
@@ -387,14 +453,13 @@ function renderGrid(simState) {
     }
     tile.tabIndex = 0;
     tile.setAttribute("role", "button");
-    tile.setAttribute("aria-label", `District ${district.x + 1}, ${district.y + 1}`);
-    if (district.nickname) {
-      tile.title = `Nickname: ${district.nickname}`;
-    }
+    tile.setAttribute("aria-label", districtAriaLabel(district));
 
     const density = densityLabel(district);
-    const tier = district.incomeTier === 0 ? "Low" : district.incomeTier === 1 ? "Middle" : "High";
+    const tier = incomeTierLabel(district.incomeTier);
     const devLabel = devLevelLabel(district.devLevel);
+    const nickname = district.nickname ? ` | ${district.nickname}` : "";
+    tile.title = `${houseSymbol(district)} ${incomeSymbol(district)} | ${tier} income | ${density} density | Dev ${devLabel}${nickname}`;
 
     const icons = district.tokens
       .slice(0, 3)
@@ -408,10 +473,10 @@ function renderGrid(simState) {
 
     tile.style.background = tileBackground(simState, district);
     tile.innerHTML = `
-      <div class="tier">${uiState.viewMode === "income" ? tier : ""}</div>
-      <div class="density">Pop: ${density}</div>
-      <div class="density">Access: ${Math.round(district.access)}</div>
-      <div class="dev-marker">Dev ${devLabel}</div>
+      <div class="symbols">
+        <div class="houses">${houseSymbol(district)}</div>
+        <div class="money">${incomeSymbol(district)}</div>
+      </div>
       <div class="icons">${icons}</div>
     `;
 
@@ -516,7 +581,7 @@ function renderInspector(simState) {
   }
   const district = simState.districts.find((d) => d.id === id);
   if (!district) return;
-  const tier = district.incomeTier === 0 ? "Low" : district.incomeTier === 1 ? "Middle" : "High";
+  const tier = incomeTierLabel(district.incomeTier);
   const density = densityLabel(district);
   const deltas = simState.lastDistrictDeltas[district.id] || {};
   const drivers = simState.lastDistrictDrivers[district.id] || [];
@@ -771,7 +836,9 @@ function showDistrictFloaters(effects) {
 }
 
 function metricTarget(key) {
-  if (key === "budget") return els.budgetChip;
+  if (key === "budget") return els.cityBudget || els.budgetChip;
+  if (key === "growth") return els.citySize;
+  if (key === "legitimacy") return els.publicSupport;
   const direct = document.getElementById(key);
   if (direct) return direct;
   return document.querySelector(`.metric-line[data-metric="${key}"]`);
@@ -876,11 +943,12 @@ function renderDashboards(simState) {
   const func = [
     ["cohesion", "Cohesion", simState.metrics.cohesion],
     ["capacity", "Capacity", simState.metrics.capacity],
-    ["legitimacy", "Legitimacy", simState.metrics.legitimacy],
+    ["legitimacy", "Public Support", simState.metrics.legitimacy],
     ["disorder", "Disorder", simState.metrics.disorder],
     ["resilience", "Resilience", simState.metrics.resilience],
   ];
   const conf = [
+    ["strain", "Strain", simState.metrics.strain],
     ["inequality", "Inequality", simState.metrics.inequality],
     ["mobility", "Mobility", simState.metrics.mobility],
     ["capture", "Political Capture", simState.metrics.capture],
@@ -982,10 +1050,12 @@ function renderMeta(simState) {
   els.stageChip.textContent = `Stage ${simState.stage}: ${stage ? stage.name : ""}`;
   els.turnChip.textContent = `Turn ${simState.turn}`;
   els.yearChip.textContent = `Year ${simState.year}`;
-  els.growth.textContent = Math.round(simState.metrics.growth);
-  els.strain.textContent = Math.round(simState.metrics.strain);
-  els.legitimacy.textContent = Math.round(simState.metrics.legitimacy);
-  els.budgetChip.textContent = `Budget ${simState.budget} (Selected ${selectedCost()})`;
+  const size = citySize(simState);
+  const sizeDelta = citySizeDelta(simState);
+  els.citySize.textContent = `${size} (${signedNumber(sizeDelta)})`;
+  els.cityBudget.textContent = formatCurrency(simState.budget);
+  els.publicSupport.textContent = `${Math.round(simState.metrics.legitimacy)}%`;
+  els.budgetChip.textContent = `Budget ${formatCurrency(simState.budget)} (Selected ${selectedCost()})`;
   els.seedChip.textContent = `Seed ${simState.seed}`;
   els.nextTurn.disabled = Boolean(simState.pendingDilemma || simState.endgame);
 }
@@ -998,11 +1068,11 @@ function renderRuns() {
   els.runs.innerHTML = uiState.savedRuns
     .map((run) => {
       return `
-        <div class="run-card">
-          <div class="run-title">${run.label}</div>
-          <div class="run-line">Seed ${run.seed} | Stage ${run.stage} | Turn ${run.turn}</div>
-          <div class="run-line">Cohesion ${Math.round(run.metrics.cohesion)} | Inequality ${Math.round(run.metrics.inequality)} | Legitimacy ${Math.round(run.metrics.legitimacy)}</div>
-        </div>
+          <div class="run-card">
+            <div class="run-title">${run.label}</div>
+            <div class="run-line">Seed ${run.seed} | Stage ${run.stage} | Turn ${run.turn}</div>
+          <div class="run-line">Cohesion ${Math.round(run.metrics.cohesion)} | Inequality ${Math.round(run.metrics.inequality)} | Public Support ${Math.round(run.metrics.legitimacy)}%</div>
+          </div>
       `;
     })
     .join("");
@@ -1178,7 +1248,13 @@ function drawSnapshotCard(simState) {
   ctx.fillText("Final Skyline", gridX, gridY - 14);
 
   simState.districts.forEach((district) => {
-    const color = district.incomeTier === 0 ? "#6aaed6" : district.incomeTier === 1 ? "#f0c36d" : "#d17b88";
+    const color = district.devLevel === 0 || district.incomeTier === null
+      ? "#c8d0da"
+      : district.incomeTier === 0
+        ? "#6aaed6"
+        : district.incomeTier === 1
+          ? "#f0c36d"
+          : "#d17b88";
     const x = gridX + district.x * cell;
     const y = gridY + district.y * cell;
     ctx.fillStyle = color;

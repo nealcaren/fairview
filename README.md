@@ -14,6 +14,28 @@ python3 -m http.server
 
 Then visit `http://localhost:8000`.
 
+## Automated E2E Tests
+
+Playwright tests are included for onboarding, progressive complexity, endgame state, and exports.
+
+1. Install dev dependencies:
+
+```bash
+npm install
+```
+
+2. Install Playwright browsers:
+
+```bash
+npx playwright install
+```
+
+3. Run end-to-end tests:
+
+```bash
+npm run test:e2e
+```
+
 ## File Overview
 
 - `index.html`: UI layout and containers.
