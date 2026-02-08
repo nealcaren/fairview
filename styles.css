@@ -1,0 +1,637 @@
+:root {
+  --bg: #f2efe9;
+  --ink: #1b1f1e;
+  --muted: #5f625f;
+  --panel: #fff8ef;
+  --accent: #b85a3d;
+  --accent-2: #2e6f95;
+  --low: #6aaed6;
+  --mid: #f0c36d;
+  --high: #d17b88;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --radius: 14px;
+}
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 20, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 11;
+}
+
+.drawer.hidden {
+  display: none;
+}
+
+.drawer-content {
+  width: min(600px, 92vw);
+  background: #fffdf9;
+  border-radius: 16px 16px 0 0;
+  padding: 16px;
+  box-shadow: 0 -16px 30px rgba(0, 0, 0, 0.2);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-body {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.drawer-section {
+  background: #f7efe4;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.stage-banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fffdf9;
+  border: 1px solid #e7d9c6;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 13px;
+  box-shadow: 0 12px 24px var(--shadow);
+  z-index: 12;
+}
+
+.stage-banner.hidden {
+  display: none;
+}
+
+.policy-controls {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tag-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  border: 1px solid #e5d8c6;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  cursor: pointer;
+  background: #fffdf9;
+}
+
+.tag.active {
+  background: var(--accent-2);
+  color: white;
+  border-color: var(--accent-2);
+}
+
+.policy-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inspector-section {
+  padding: 8px;
+  background: #f7efe4;
+  border-radius: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.tile {
+  outline: none;
+}
+
+.tile:focus {
+  box-shadow: inset 0 0 0 2px var(--accent-2);
+}
+
+.tile.selected {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.tile .dev-marker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.tile .icons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.token-icon {
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.setup {
+  display: grid;
+  gap: 10px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field input,
+.field select,
+.sort {
+  border: 1px solid #e5d8c6;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "DM Serif Text", "Palatino", "Georgia", serif;
+  color: var(--ink);
+  background: radial-gradient(circle at top left, #faf5ee, #ece6db 55%, #e3dccf 100%);
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.title h1 {
+  margin: 0;
+  font-size: 36px;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  color: var(--muted);
+}
+
+.meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: var(--panel);
+  border: 1px solid #e5d8c6;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+
+.panel {
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 12px 24px var(--shadow);
+  margin-bottom: 16px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panel-note {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend {
+  display: flex;
+  gap: 10px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.dot.low { background: var(--low); }
+.dot.mid { background: var(--mid); }
+.dot.high { background: var(--high); }
+
+.view-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.toggle {
+  border: 1px solid #e5d8c6;
+  background: #fffdf9;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  cursor: pointer;
+}
+
+.toggle.active {
+  background: var(--accent-2);
+  color: white;
+  border-color: var(--accent-2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.tile {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  padding: 8px;
+  color: #1c1c1c;
+  font-size: 11px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.tile .tier {
+  font-weight: 600;
+}
+
+.tile .density {
+  opacity: 0.7;
+  font-size: 10px;
+}
+
+.tile .icons {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.inspector {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  display: grid;
+  gap: 6px;
+}
+
+.inspector-line strong {
+  color: var(--ink);
+}
+
+.newsfeed {
+  max-height: 240px;
+  overflow-y: auto;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+
+.news-item {
+  border-bottom: 1px solid #eddcc8;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.news-item.quote {
+  font-style: italic;
+}
+
+.news-item.headlines {
+  display: grid;
+  gap: 6px;
+}
+
+.news-turn {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.headline-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.headline {
+  background: #f7efe4;
+  border-radius: 8px;
+  padding: 6px;
+  font-size: 12px;
+}
+
+.primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  cursor: pointer;
+}
+
+.secondary {
+  background: #fffdf9;
+  color: var(--ink);
+  border: 1px solid #e5d8c6;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.metric {
+  background: #f7efe4;
+  border-radius: 12px;
+  padding: 10px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+
+.metric .label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.metric .value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.card-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.policy-card {
+  border: 1px solid #e7d9c6;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fffdf9;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+
+.policy-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+}
+
+.policy-card p {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.policy-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.placement-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.placement-btn {
+  border: 1px solid #e7d9c6;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fffdf9;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.placement-btn.active {
+  border-color: var(--accent-2);
+  box-shadow: inset 0 0 0 1px var(--accent-2);
+}
+
+.badge {
+  background: #f1e2cf;
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+.event {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dashboards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dashboard h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+}
+
+.metric-list {
+  display: grid;
+  gap: 6px;
+}
+
+.metric-line {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+}
+
+.runs {
+  display: grid;
+  gap: 8px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.run-card {
+  border: 1px solid #e7d9c6;
+  border-radius: 10px;
+  padding: 8px;
+  background: #fffdf9;
+}
+
+.run-title {
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.run-line {
+  font-size: 11px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #fffdf9;
+  border-radius: 16px;
+  padding: 18px;
+  width: min(520px, 90vw);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.summary-body {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.summary-line {
+  padding: 6px 8px;
+  background: #f7efe4;
+  border-radius: 10px;
+}
+
+.summary-prompt {
+  padding: 8px;
+  border-radius: 10px;
+  background: #f1e2cf;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (max-width: 980px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
+    grid-template-columns: repeat(6, minmax(40px, 1fr));
+  }
+
+  .dashboards {
+    grid-template-columns: 1fr;
+  }
+}
