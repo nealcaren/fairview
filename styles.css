@@ -978,6 +978,16 @@ textarea {
   background: rgba(255, 255, 255, 0.72);
 }
 
+.policy-card.policy-skip {
+  border-style: dashed;
+}
+
+.policy-card.policy-skip.active {
+  border-color: var(--accent-2);
+  box-shadow: inset 0 0 0 1px var(--accent-2);
+  background: rgba(215, 240, 246, 0.72);
+}
+
 .policy-card h4 {
   margin: 0 0 6px;
   font-family: "Syne", sans-serif;

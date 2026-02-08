@@ -89,6 +89,7 @@ const els = {
 const uiState = {
   viewMode: "income",
   selectedPolicies: new Set(),
+  skipPolicy: false,
   activeToken: null,
   hoveredDistrictId: null,
   selectedDistrictId: null,
@@ -209,6 +210,7 @@ function startSimulation(seed, scenarioKey) {
   rng = createRng(seed);
   state = createState({ seed, scenarioKey, rng });
   uiState.selectedPolicies.clear();
+  uiState.skipPolicy = false;
   uiState.activeToken = null;
   uiState.selectedDistrictId = null;
   uiState.hoveredDistrictId = null;
@@ -506,14 +508,16 @@ function renderChecklist(simState) {
   if (!els.turnChecklist) return;
   const maxPolicies = policyLimit(simState);
   const policyCount = uiState.selectedPolicies.size;
+  const skipped = uiState.skipPolicy;
   const placements = simState.placementsThisTurn;
-  const policyStatus = policyCount > 0 ? "done" : "todo";
+  const policyStatus = policyCount > 0 || skipped ? "done" : "todo";
   const tokenStatus = placements > 0 ? "done" : "optional";
-  const nextStatus = policyCount > 0 || placements > 0 ? "ready" : "todo";
+  const nextStatus = policyCount > 0 || placements > 0 || skipped ? "ready" : "todo";
+  const policyLine = skipped ? "Policy choice: No policy this round" : `Policy choice: ${policyCount}/${maxPolicies} selected`;
   els.turnChecklist.innerHTML = `
     <div class="checklist-item ${policyStatus}">
       <span class="check-state">${policyStatus === "done" ? "Done" : "To do"}</span>
-      <span>Policy choice: ${policyCount}/${maxPolicies} selected</span>
+      <span>${policyLine}</span>
     </div>
     <div class="checklist-item ${tokenStatus}">
       <span class="check-state">${tokenStatus === "done" ? "Done" : "Optional"}</span>
@@ -534,8 +538,14 @@ function defaultCoachMessage(simState) {
     return "Token selected. Click a developed district (any lot with a colored outline) to place it.";
   }
   const selected = uiState.selectedPolicies.size;
+  if (uiState.skipPolicy) {
+    if (simState.placementsThisTurn === 0) {
+      return "No policy selected. Optional: place one institution token, or press Next Turn.";
+    }
+    return "No policy selected. Press Next Turn to continue.";
+  }
   if (selected === 0) {
-    return `Start by choosing up to ${policyLimit(simState)} policy ${policyLimit(simState) === 1 ? "card" : "cards"}, then press Next Turn.`;
+    return `Choose from 3 policy options, or tap No Policy This Round.`;
   }
   if (simState.placementsThisTurn === 0) {
     return "Optional: place one institution token this turn, then press Next Turn.";
@@ -841,10 +851,31 @@ function tokenEffectSummary(type) {
 function renderPolicies(simState) {
   els.policies.innerHTML = "";
   const maxPolicies = policyLimit(simState);
+  const offerCount = 3;
   if (els.policyLimitNote) {
-    els.policyLimitNote.textContent = `Select up to ${maxPolicies}. Budget resets each turn.`;
+    els.policyLimitNote.textContent = `Choose up to ${maxPolicies} from ${offerCount} options, or pick No Policy This Round.`;
   }
-  const policies = filteredPolicies(simState);
+  const policies = offeredPolicies(simState, offerCount);
+  const offeredIds = new Set(policies.map((card) => card.id));
+  Array.from(uiState.selectedPolicies).forEach((id) => {
+    if (!offeredIds.has(id)) {
+      uiState.selectedPolicies.delete(id);
+    }
+  });
+
+  const skipCard = document.createElement("div");
+  skipCard.className = `policy-card policy-skip ${uiState.skipPolicy ? "active" : ""}`;
+  skipCard.innerHTML = `
+    <h4>No Policy This Round</h4>
+    <p>Save budget and move to the next round without enacting a policy card.</p>
+    <div class="policy-actions">
+      <button class="${uiState.skipPolicy ? "primary" : "secondary"}" data-no-policy="1">
+        ${uiState.skipPolicy ? "Selected" : "Choose No Policy"}
+      </button>
+    </div>
+  `;
+  els.policies.appendChild(skipCard);
+
   policies.forEach((card) => {
     const wrapper = document.createElement("div");
     wrapper.className = "policy-card";
@@ -895,6 +926,7 @@ function renderPolicies(simState) {
           }
           return;
         }
+        uiState.skipPolicy = false;
         uiState.selectedPolicies.add(id);
         clearCoachMessage();
         showPolicyFloaters(card);
@@ -915,6 +947,18 @@ function renderPolicies(simState) {
     });
   });
 
+  const noPolicyButton = els.policies.querySelector("button[data-no-policy]");
+  if (noPolicyButton) {
+    noPolicyButton.addEventListener("click", () => {
+      uiState.skipPolicy = !uiState.skipPolicy;
+      if (uiState.skipPolicy) {
+        uiState.selectedPolicies.clear();
+        clearCoachMessage();
+      }
+      renderPolicies(simState);
+    });
+  }
+
   updatePolicyUI(simState);
 }
 
@@ -926,6 +970,11 @@ function updatePolicyUI(simState) {
     const id = checkbox.dataset.card;
     const card = POLICY_CARDS.find((c) => c.id === id);
     if (!card) return;
+    if (uiState.skipPolicy) {
+      checkbox.checked = false;
+      checkbox.disabled = true;
+      return;
+    }
     if (checkbox.checked) {
       checkbox.disabled = false;
     } else if (uiState.selectedPolicies.size >= maxPolicies) {
@@ -1004,6 +1053,7 @@ function attemptSelectPolicy(card) {
     renderPolicies(state);
     return;
   }
+  uiState.skipPolicy = false;
   uiState.selectedPolicies.add(card.id);
   clearCoachMessage();
   showPolicyFloaters(card);
@@ -1105,6 +1155,31 @@ function filteredPolicies(simState) {
     list = [...list].sort((a, b) => policyImpact(b) - policyImpact(a));
   }
   return list;
+}
+
+function hashString(value) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function offeredPolicies(simState, count = 3) {
+  let list = filteredPolicies(simState);
+  if (!list.length && uiState.activeTags.size > 0) {
+    list = POLICY_CARDS.filter((card) => simState.stage >= card.minStage);
+  }
+  if (list.length <= count) {
+    return list;
+  }
+  const offers = [];
+  const offset = hashString(`${simState.seed}:${simState.turn}:${simState.stage}`) % list.length;
+  for (let i = 0; i < count; i += 1) {
+    offers.push(list[(offset + i) % list.length]);
+  }
+  return offers;
 }
 
 function policyImpact(card) {
@@ -1566,6 +1641,7 @@ function advanceTurn(options = {}) {
     return false;
   }
   uiState.selectedPolicies.clear();
+  uiState.skipPolicy = false;
   uiState.lastPlacementMessage = null;
   render(state);
   showSummary(state);
