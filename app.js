@@ -296,6 +296,7 @@ function incomeTierLabel(tier) {
 }
 
 const NEIGHBORHOOD_CELL_ORDER = [4, 1, 3, 5, 7, 0, 2, 6, 8];
+const TOKEN_CELL_ORDER = [0, 2, 6, 8, 4, 1, 3, 5, 7];
 
 function populationCells(district) {
   if (district.devLevel === 0 || district.populationValue <= 0) return 0;
@@ -674,10 +675,13 @@ function renderGrid(simState) {
 
     const icons = district.tokens
       .slice(0, 3)
-      .map((type) => {
+      .map((type, index) => {
         const token = TOKEN_TYPES[type];
         const summary = tokenEffectSummary(type);
-        return `<span class="token-icon" title="${token.label}: ${summary}">${tokenIconSvg(type)}</span>`;
+        const cellIndex = TOKEN_CELL_ORDER[index] ?? index;
+        const col = cellIndex % 3;
+        const row = Math.floor(cellIndex / 3);
+        return `<span class="token-icon" style="--slot-col:${col}; --slot-row:${row};" title="${token.label}: ${summary}">${tokenIconSvg(type)}</span>`;
       })
       .join(" ");
 
@@ -685,8 +689,8 @@ function renderGrid(simState) {
     tile.innerHTML = `
       <div class="symbols">
         <div class="neighborhood">${neighborhoodSvg(district)}</div>
+        <div class="icons">${icons}</div>
       </div>
-      <div class="icons">${icons}</div>
     `;
 
     tile.addEventListener("mouseenter", () => {
