@@ -278,35 +278,63 @@ function emptyLotCellSvg(x, y, size, undeveloped = false) {
   return `<rect x="${x + 0.5}" y="${y + 0.5}" width="${size - 1}" height="${size - 1}" rx="1.2" fill="${fill}" stroke="${stroke}" stroke-width="0.8"${dash}></rect>`;
 }
 
+function tierPalette(tier) {
+  if (tier === 2) {
+    return {
+      lotFill: "#f6dfda",
+      lotStroke: "#9b4b3d",
+      roof: "#9b4b3d",
+      body: "#fff2ec",
+      trim: "#5c2a21",
+    };
+  }
+  if (tier === 1) {
+    return {
+      lotFill: "#f4e8d0",
+      lotStroke: "#8f6a39",
+      roof: "#8f6a39",
+      body: "#fff8ec",
+      trim: "#4f3a1f",
+    };
+  }
+  return {
+    lotFill: "#dcebf2",
+    lotStroke: "#4f7f8f",
+    roof: "#4f7f8f",
+    body: "#f2fbff",
+    trim: "#24424c",
+  };
+}
+
 function miniHouseCellSvg(tier, x, y, size) {
-  const roofLeft = x + size * 0.18;
-  const roofRight = x + size * 0.82;
-  const roofTop = y + size * 0.26;
-  const roofBottom = y + size * 0.52;
-  const baseLeft = x + size * 0.24;
-  const baseTop = y + size * 0.5;
-  const baseWidth = size * 0.52;
-  const baseHeight = size * 0.34;
+  const palette = tierPalette(tier);
+  const lot = `<rect x="${x + 0.5}" y="${y + 0.5}" width="${size - 1}" height="${size - 1}" rx="1.2" fill="${palette.lotFill}" stroke="${palette.lotStroke}" stroke-width="0.7"></rect>`;
 
   if (tier === 2) {
     return `
-      <path d="M${roofLeft} ${roofBottom} L${x + size * 0.5} ${roofTop} L${roofRight} ${roofBottom}" fill="#9b4b3d" stroke="#5c2a21" stroke-width="0.7"></path>
-      <rect x="${baseLeft}" y="${baseTop}" width="${baseWidth}" height="${baseHeight}" rx="0.5" fill="#f6ede2" stroke="#5c2a21" stroke-width="0.7"></rect>
-      <rect x="${x + size * 0.46}" y="${y + size * 0.62}" width="${size * 0.1}" height="${size * 0.22}" fill="#5c2a21"></rect>
-      <rect x="${x + size * 0.67}" y="${y + size * 0.23}" width="${size * 0.08}" height="${size * 0.17}" fill="#7f3f30"></rect>
+      ${lot}
+      <path d="M${x + size * 0.14} ${y + size * 0.46} L${x + size * 0.5} ${y + size * 0.2} L${x + size * 0.86} ${y + size * 0.46}" fill="${palette.roof}" stroke="${palette.trim}" stroke-width="0.75"></path>
+      <rect x="${x + size * 0.24}" y="${y + size * 0.46}" width="${size * 0.52}" height="${size * 0.34}" rx="0.5" fill="${palette.body}" stroke="${palette.trim}" stroke-width="0.75"></rect>
+      <rect x="${x + size * 0.42}" y="${y + size * 0.56}" width="${size * 0.16}" height="${size * 0.24}" fill="${palette.trim}"></rect>
+      <circle cx="${x + size * 0.68}" cy="${y + size * 0.58}" r="${size * 0.07}" fill="${palette.trim}"></circle>
+      <rect x="${x + size * 0.72}" y="${y + size * 0.18}" width="${size * 0.08}" height="${size * 0.16}" fill="${palette.trim}"></rect>
     `;
   }
   if (tier === 1) {
     return `
-      <path d="M${roofLeft} ${roofBottom} L${x + size * 0.5} ${roofTop} L${roofRight} ${roofBottom}" fill="#8f6a39" stroke="#4f3a1f" stroke-width="0.7"></path>
-      <rect x="${baseLeft}" y="${baseTop}" width="${baseWidth}" height="${baseHeight}" rx="0.5" fill="#f4ead8" stroke="#4f3a1f" stroke-width="0.7"></rect>
-      <path d="M${x + size * 0.5} ${baseTop} V${y + size * 0.84}" stroke="#4f3a1f" stroke-width="0.5"></path>
+      ${lot}
+      <rect x="${x + size * 0.2}" y="${y + size * 0.28}" width="${size * 0.6}" height="${size * 0.12}" rx="0.4" fill="${palette.roof}"></rect>
+      <rect x="${x + size * 0.2}" y="${y + size * 0.4}" width="${size * 0.6}" height="${size * 0.4}" rx="0.5" fill="${palette.body}" stroke="${palette.trim}" stroke-width="0.75"></rect>
+      <path d="M${x + size * 0.5} ${y + size * 0.42} V${y + size * 0.78}" stroke="${palette.trim}" stroke-width="0.6"></path>
+      <rect x="${x + size * 0.28}" y="${y + size * 0.52}" width="${size * 0.1}" height="${size * 0.1}" fill="${palette.trim}"></rect>
+      <rect x="${x + size * 0.62}" y="${y + size * 0.52}" width="${size * 0.1}" height="${size * 0.1}" fill="${palette.trim}"></rect>
     `;
   }
   return `
-    <path d="M${roofLeft} ${roofBottom} L${x + size * 0.5} ${roofTop} L${roofRight} ${roofBottom}" fill="#4f7f8f" stroke="#24424c" stroke-width="0.7"></path>
-    <rect x="${baseLeft}" y="${baseTop}" width="${baseWidth}" height="${baseHeight}" rx="0.5" fill="#eaf1f4" stroke="#24424c" stroke-width="0.7"></rect>
-    <rect x="${x + size * 0.46}" y="${y + size * 0.62}" width="${size * 0.1}" height="${size * 0.22}" fill="#24424c"></rect>
+    ${lot}
+    <path d="M${x + size * 0.18} ${y + size * 0.48} L${x + size * 0.5} ${y + size * 0.24} L${x + size * 0.82} ${y + size * 0.48}" fill="${palette.roof}" stroke="${palette.trim}" stroke-width="0.75"></path>
+    <rect x="${x + size * 0.24}" y="${y + size * 0.48}" width="${size * 0.52}" height="${size * 0.32}" rx="0.5" fill="${palette.body}" stroke="${palette.trim}" stroke-width="0.75"></rect>
+    <rect x="${x + size * 0.44}" y="${y + size * 0.56}" width="${size * 0.12}" height="${size * 0.24}" fill="${palette.trim}"></rect>
   `;
 }
 
@@ -550,8 +578,7 @@ function tileBackground(simState, district) {
     const burden = clamp((district.risk + district.housingCost) / 2);
     return blendColor("#b8d0c8", "#a63d40", burden / 100);
   }
-  const tierClass = district.incomeTier === 0 ? "low" : district.incomeTier === 1 ? "mid" : "high";
-  return `var(--${tierClass})`;
+  return "#f3ece0";
 }
 
 function renderGrid(simState) {
