@@ -30,7 +30,6 @@ const els = {
   confMetrics: document.getElementById("conf-metrics"),
   stageChip: document.getElementById("stage-chip"),
   turnChip: document.getElementById("turn-chip"),
-  yearChip: document.getElementById("year-chip"),
   budgetChip: document.getElementById("budget-chip"),
   seedChip: document.getElementById("seed-chip"),
   inspector: document.getElementById("inspector"),
@@ -114,6 +113,7 @@ const uiState = {
 const session = {
   initialSeed: resolveSeed(),
   scenarioKey: resolveScenario(),
+  adminMode: resolveAdminMode(),
 };
 
 let rng = createRng(session.initialSeed);
@@ -137,9 +137,18 @@ function resolveScenario() {
   return "default";
 }
 
+function resolveAdminMode() {
+  const params = new URLSearchParams(window.location.search);
+  const value = (params.get("admin") || "").toLowerCase();
+  return value === "1" || value === "true" || value === "yes";
+}
+
 function loadTone() {
   const stored = window.localStorage.getItem("fairview-tone");
-  return stored || "academic";
+  if (stored === "academic" || stored === "civic" || stored === "satirical") {
+    return stored;
+  }
+  return "civic";
 }
 
 function saveTone(tone) {
@@ -221,7 +230,10 @@ function startSimulation(seed, scenarioKey) {
     els.quizModal.classList.add("hidden");
   }
   if (els.adminTools) {
-    els.adminTools.classList.add("hidden");
+    els.adminTools.classList.toggle("hidden", !session.adminMode);
+  }
+  if (!session.adminMode) {
+    uiState.tone = "civic";
   }
   els.seedInput.value = seed;
   els.scenarioSelect.value = scenarioKey;
@@ -598,15 +610,15 @@ function renderLegend(simState) {
     `;
   } else if (uiState.viewMode === "functionalism") {
     legendHtml = `
-      <span class="dot" style="background:#d1e8d5"></span> Low integration
-      <span class="dot" style="background:#2f8f6a"></span> High integration
-      <span class="dev-marker">Metric: cohesion minus disorder</span>
+      <span class="dot" style="background:#d1e8d5"></span> Weaker city systems
+      <span class="dot" style="background:#2f8f6a"></span> Stronger city systems
+      <span class="dev-marker">Based on cohesion and disorder</span>
     `;
   } else {
     legendHtml = `
-      <span class="dot" style="background:#b8d0c8"></span> Low burden
-      <span class="dot" style="background:#a63d40"></span> High burden
-      <span class="dev-marker">Metric: housing + risk</span>
+      <span class="dot" style="background:#b8d0c8"></span> Lower pressure
+      <span class="dot" style="background:#a63d40"></span> Higher pressure
+      <span class="dev-marker">Based on housing cost and risk</span>
     `;
   }
 
@@ -1138,19 +1150,19 @@ function renderPlacementPanel(simState) {
 
 function renderDashboards(simState) {
   const func = [
-    ["cohesion", "Cohesion", simState.metrics.cohesion],
-    ["capacity", "Capacity", simState.metrics.capacity],
+    ["cohesion", "Community Trust", simState.metrics.cohesion],
+    ["capacity", "Service Capacity", simState.metrics.capacity],
     ["legitimacy", "Public Support", simState.metrics.legitimacy],
     ["disorder", "Disorder", simState.metrics.disorder],
-    ["resilience", "Resilience", simState.metrics.resilience],
+    ["resilience", "Recovery Strength", simState.metrics.resilience],
   ];
   const conf = [
     ["strain", "Strain", simState.metrics.strain],
     ["inequality", "Inequality", simState.metrics.inequality],
     ["mobility", "Mobility", simState.metrics.mobility],
-    ["capture", "Political Capture", simState.metrics.capture],
-    ["burden", "Group Burden", simState.metrics.burden],
-    ["contestation", "Contestation", simState.metrics.contestation],
+    ["capture", "Insider Control", simState.metrics.capture],
+    ["burden", "Uneven Burden", simState.metrics.burden],
+    ["contestation", "Pushback", simState.metrics.contestation],
   ];
 
   els.funcMetrics.innerHTML = func
@@ -1171,7 +1183,7 @@ function renderNews(simState) {
 function formatNewsItem(item) {
   const entry = typeof item === "string" ? { kind: "text", text: item } : item;
   const kind = entry.kind || "text";
-  const turnLabel = entry.turn ? `Turn ${entry.turn}: ` : "";
+  const turnLabel = entry.turn ? `Round ${entry.turn}: ` : "";
 
   if (kind === "headlines") {
     const left = entry.headlines?.proGrowth || "";
@@ -1245,15 +1257,16 @@ function renderEvent(simState) {
 function renderMeta(simState) {
   const stage = STAGES.find((s) => s.id === simState.stage);
   els.stageChip.textContent = `Stage ${simState.stage}: ${stage ? stage.name : ""}`;
-  els.turnChip.textContent = `Turn ${simState.turn}`;
-  els.yearChip.textContent = `Year ${simState.year}`;
+  els.turnChip.textContent = `Round ${simState.turn}`;
   const size = citySize(simState);
   const sizeDelta = citySizeDelta(simState);
   els.citySize.textContent = `${size} (${signedNumber(sizeDelta)})`;
   els.cityBudget.textContent = formatCurrency(simState.budget);
   els.publicSupport.textContent = `${Math.round(simState.metrics.legitimacy)}%`;
   els.budgetChip.textContent = `Budget ${formatCurrency(simState.budget)} (Selected ${selectedCost()})`;
-  els.seedChip.textContent = `Seed ${simState.seed}`;
+  if (els.seedChip) {
+    els.seedChip.textContent = `Seed ${simState.seed}`;
+  }
   els.nextTurn.disabled = Boolean(simState.pendingDilemma || simState.endgame);
 }
 
@@ -1267,7 +1280,7 @@ function renderRuns() {
       return `
           <div class="run-card">
             <div class="run-title">${run.label}</div>
-            <div class="run-line">Seed ${run.seed} | Stage ${run.stage} | Turn ${run.turn}</div>
+            <div class="run-line">Seed ${run.seed} | Stage ${run.stage} | Round ${run.turn}</div>
           <div class="run-line">Cohesion ${Math.round(run.metrics.cohesion)} | Inequality ${Math.round(run.metrics.inequality)} | Public Support ${Math.round(run.metrics.legitimacy)}%</div>
           </div>
       `;
@@ -1289,8 +1302,8 @@ function showSummary(simState) {
     <div class="summary-line">${summary.headline}</div>
     <div class="summary-line">${metricLines}</div>
     <div class="summary-line">${groupLine}</div>
-    <div class="summary-line">Functionalist lens: ${summary.funcLine}</div>
-    <div class="summary-line">Conflict lens: ${summary.confLine}</div>
+    <div class="summary-line">City systems: ${summary.funcLine}</div>
+    <div class="summary-line">Equity pressure: ${summary.confLine}</div>
     ${summary.prompt ? `<div class="summary-prompt">${summary.prompt}</div>` : ""}
   `;
 
@@ -1610,9 +1623,9 @@ function exportJson() {
 }
 
 function exportCsv() {
-  const headers = ["turn", "year", "stage", ...Object.keys(state.metrics)];
+  const headers = ["round", "stage", ...Object.keys(state.metrics)];
   const rows = state.history.map((entry) => {
-    const values = [entry.turn, entry.year, entry.stage];
+    const values = [entry.turn, entry.stage];
     Object.keys(state.metrics).forEach((key) => {
       values.push(Math.round(entry.metrics[key]));
     });
@@ -1723,6 +1736,7 @@ function bindEvents() {
 
   if (els.toneSelect) {
     els.toneSelect.addEventListener("change", () => {
+      if (!session.adminMode) return;
       uiState.tone = els.toneSelect.value;
       saveTone(uiState.tone);
       renderNews(state);
@@ -1762,10 +1776,20 @@ function init() {
   if (!uiState.legendPrimed) {
     uiState.legendCollapsed = false;
   }
+  if (els.adminTools) {
+    els.adminTools.classList.toggle("hidden", !session.adminMode);
+  }
+  if (els.seedChip) {
+    els.seedChip.classList.add("hidden");
+  }
+  if (!session.adminMode) {
+    uiState.tone = "civic";
+  }
   initScenarioSelect();
   els.seedInput.value = state.seed;
   els.policySort.value = uiState.policySort;
   if (els.toneSelect) {
+    els.toneSelect.classList.toggle("hidden", !session.adminMode);
     els.toneSelect.value = uiState.tone;
   }
   renderTags();

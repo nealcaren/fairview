@@ -7,18 +7,18 @@ async function wait(page, ms = 100) {
 }
 
 async function gotoActions(page) {
-  await page.getByRole("button", { name: "Actions" }).click();
+  await page.getByRole("button", { name: "Plan" }).click();
   await wait(page, 80);
 }
 
 async function gotoData(page) {
-  await page.getByRole("button", { name: "Data" }).click();
+  await page.getByRole("button", { name: "Insights" }).click();
   await wait(page, 80);
 }
 
 async function currentTurn(page) {
   const text = await page.locator("#turn-chip").innerText();
-  return Number(text.match(/Turn\s+(\d+)/i)?.[1] ?? 0);
+  return Number(text.match(/(?:Turn|Round)\s+(\d+)/i)?.[1] ?? 0);
 }
 
 async function currentStage(page) {
@@ -117,6 +117,25 @@ test.beforeEach(async ({ page }) => {
     window.localStorage.removeItem("fairview-onboarding-optout");
   });
   await page.goto(SEEDED_URL);
+});
+
+test("student mode defaults hide admin controls and seed", async ({ page }) => {
+  await closeTransientModals(page);
+  await expect(page.locator("#turn-chip")).toContainText(/Round\s+1/i);
+  await expect(page.locator("#seed-chip:not(.hidden)")).toHaveCount(0);
+  await expect(page.locator("#tone-select:not(.hidden)")).toHaveCount(0);
+  await gotoData(page);
+  await expect(page.locator("#admin-tools:not(.hidden)")).toHaveCount(0);
+});
+
+test("admin mode shows tone and setup controls", async ({ page }) => {
+  await page.goto(`${SEEDED_URL}&admin=1`);
+  await closeTransientModals(page);
+  await expect(page.locator("#seed-chip:not(.hidden)")).toHaveCount(0);
+  await expect(page.locator("#tone-select:not(.hidden)")).toHaveCount(1);
+  await expect(page.locator("#tone-select")).toHaveValue("civic");
+  await gotoData(page);
+  await expect(page.locator("#admin-tools:not(.hidden)")).toHaveCount(1);
 });
 
 test("onboarding and stage 1 constraints are enforced", async ({ page }) => {

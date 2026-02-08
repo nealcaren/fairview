@@ -11,15 +11,14 @@
       <header class="topbar">
         <div class="title">
           <h1>Fairview</h1>
-          <div class="subtitle">A sociological city-growth simulation</div>
+          <div class="subtitle">A city strategy game about growth and tradeoffs</div>
         </div>
         <div class="meta">
           <button id="help-open" class="chip help-btn" aria-label="Open how-to-play guide">How To Play</button>
           <div class="chip" id="stage-chip">Stage 1</div>
-          <div class="chip" id="turn-chip">Turn 1</div>
-          <div class="chip" id="year-chip">Year 1</div>
+          <div class="chip" id="turn-chip">Round 1</div>
           <div class="chip" id="budget-chip">Budget 100</div>
-          <div class="chip" id="seed-chip">Seed 1</div>
+          <div class="chip hidden" id="seed-chip">Seed 1</div>
         </div>
       </header>
 
@@ -29,10 +28,10 @@
             <div class="panel-header">
               <h2>City Grid</h2>
               <div class="map-controls">
-                <div class="view-toggle" role="group" aria-label="Theory view">
-                  <button class="toggle active" data-view="income" aria-pressed="true">Income</button>
-                  <button class="toggle" data-view="functionalism" aria-pressed="false">Functionalism</button>
-                  <button class="toggle" data-view="conflict" aria-pressed="false">Conflict</button>
+                <div class="view-toggle" role="group" aria-label="Map view filters">
+                  <button class="toggle active" data-view="income" aria-pressed="true">Neighborhoods</button>
+                  <button class="toggle" data-view="functionalism" aria-pressed="false">City Systems</button>
+                  <button class="toggle" data-view="conflict" aria-pressed="false">Pressure</button>
                 </div>
                 <button id="legend-toggle" class="secondary legend-toggle" aria-expanded="true" aria-label="Hide legend">Hide Legend</button>
               </div>
@@ -48,9 +47,9 @@
 
         <section class="right" id="office-section">
           <div class="tabs" role="tablist" aria-label="Game loop tabs">
-            <button class="tab-link active" data-tab="briefing" aria-selected="true" aria-controls="tab-briefing">Briefing</button>
-            <button class="tab-link" data-tab="actions" aria-selected="false" aria-controls="tab-actions">Actions</button>
-            <button class="tab-link" data-tab="data" aria-selected="false" aria-controls="tab-data">Data</button>
+            <button class="tab-link active" data-tab="briefing" aria-selected="true" aria-controls="tab-briefing">Overview</button>
+            <button class="tab-link" data-tab="actions" aria-selected="false" aria-controls="tab-actions">Plan</button>
+            <button class="tab-link" data-tab="data" aria-selected="false" aria-controls="tab-data">Insights</button>
           </div>
 
           <div class="tab-pane active" id="tab-briefing" data-tab="briefing" role="tabpanel">
@@ -84,9 +83,9 @@
             <div class="panel">
               <div class="panel-header">
                 <h2>Newsfeed</h2>
-                <select id="tone-select" class="sort" aria-label="Tone mode">
-                  <option value="academic">Academic</option>
-                  <option value="civic">Civic</option>
+                <select id="tone-select" class="sort hidden" aria-label="News style">
+                  <option value="academic">Straight</option>
+                  <option value="civic">Local Voices</option>
                   <option value="satirical">Satirical</option>
                 </select>
               </div>
@@ -97,7 +96,7 @@
           <div class="tab-pane" id="tab-actions" data-tab="actions" role="tabpanel">
             <div class="panel">
               <div class="panel-header">
-                <h2>Turn Control</h2>
+                <h2>Plan This Turn</h2>
                 <button id="next-turn" class="primary">Next Turn</button>
               </div>
               <div class="panel-note">Choose policies and tokens, then advance the turn.</div>
@@ -107,7 +106,7 @@
 
             <div class="panel">
               <div class="panel-header">
-                <h2>Institution Tokens</h2>
+                <h2>City Projects</h2>
                 <div class="panel-note">Select then click a district. One placement per turn.</div>
               </div>
               <div id="placement-info" class="panel-note"></div>
@@ -116,7 +115,7 @@
 
             <div class="panel">
               <div class="panel-header">
-                <h2>Policy Cards</h2>
+                <h2>City Policies</h2>
                 <div id="policy-limit-note" class="panel-note">Select up to 2. Budget resets each turn.</div>
               </div>
               <div class="policy-controls">
@@ -134,25 +133,25 @@
           <div class="tab-pane" id="tab-data" data-tab="data" role="tabpanel">
             <div class="panel">
               <div class="panel-header">
-                <h2>Dashboards</h2>
+                <h2>City Metrics</h2>
                 <button id="restart-sim" class="secondary">Restart</button>
               </div>
               <div class="dashboards">
                 <div class="dashboard">
-                  <h3>Functionalism</h3>
+                  <h3>Stability</h3>
                   <div id="func-metrics" class="metric-list"></div>
                 </div>
                 <div class="dashboard">
-                  <h3>Conflict</h3>
+                  <h3>Pressure</h3>
                   <div id="conf-metrics" class="metric-list"></div>
                 </div>
               </div>
             </div>
 
-            <div id="admin-tools" class="admin-tools">
+            <div id="admin-tools" class="admin-tools hidden">
               <div class="panel">
                 <div class="panel-header">
-                  <h2>Simulation Setup</h2>
+                  <h2>Instructor Setup</h2>
                 </div>
                 <div class="setup">
                   <label class="field">
@@ -187,7 +186,7 @@
 
     <nav class="mobile-nav" aria-label="Mobile view">
       <button class="mobile-btn active" data-mobile="map">City Map</button>
-      <button class="mobile-btn" data-mobile="office">City Hall</button>
+      <button class="mobile-btn" data-mobile="office">Controls</button>
     </nav>
 
     <div id="summary-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Turn summary">
@@ -260,10 +259,10 @@
           <button id="onboarding-close" class="primary">Start</button>
         </div>
         <div class="summary-body">
-          <div class="summary-line"><strong>Goal:</strong> grow the city without letting strain and inequality spiral.</div>
+          <div class="summary-line"><strong>Goal:</strong> grow a city people can actually afford to live in.</div>
           <div class="summary-line"><strong>Each turn:</strong></div>
           <ol class="onboarding-list">
-            <li>Pick policy cards in the Actions tab.</li>
+            <li>Pick policy cards in the Plan tab.</li>
             <li>Optionally place one institution token on a developed lot (colored outline).</li>
             <li>Press Next Turn and read the consequences.</li>
           </ol>
